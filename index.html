@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>slovastick - web-based DOM manipulator</title>
+	<script type="text/javascript" src="slovastick.js"></script>
+</head>
+<body>
+	<!-- start slovastick block -->
+	<slovastick>
+		<hello-world s-go="" s-go-route=".*">
+			<description title="description" s-see="//*[@id='description']"></description>
+			<getstarted title="get started" s-see="//*[@id='getstarted']/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			</getstarted>
+			<shortcuts title="about shortcuts" s-see="/html/body/ul/li[2]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			</shortcuts>
+			<plan title="about plan" s-see="/html/body/ul/li[3]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			</plan>
+			<idea title="about ideas" s-see="/html/body/ul/li[4]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			</idea>
+			<links title="external links" s-see="/html/body/ul/li[5]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
+					<ref s-see-context=".." s-see-position="1" s-see="//a"></ref>
+				</item>
+			</links>
+			<license title="license" s-see="/html/body/ul/li[6]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			</license>
+			<other title="test on other sites" s-see="/html/body/ul/li[7]/p">
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
+					<ref s-see-context=".." s-see="//a"></ref>
+				</item>
+			</other>
+			<bookmaring title="bookmaring" s-see="/html/body/div[2]/a"></bookmaring>
+		</hello-world>
+	</slovastick>
+	<!-- end slovastick block -->
+	<div id="description">
+		Slovastick - web-based DOM manipulator. It work with special element attributes
+		"s-", who run actions for him, after write XPath in console or pressed keyboard
+		shortcuts. You can automate web-surfing, navigate and edit HTML or XML document.
+		<br/>
+		<br/>
+		<div style="text-align:center;">
+			<div>
+				WARNING! Currently that program in DEEP-DEEP DEVELOPING stage. 
+				Please note. Currently work in Chrome, Firefox and Opera.
+			</div>
+			<br/>
+		</div>
+		<br/>
+	</div>
+	<ul>
+		<li id="getstarted">
+			<p>
+				Get started! Lets Go!
+			</p>
+			<ol>
+				<li>
+					In body of every page sitting element who named "slovastick", 
+					he has its own child elements, for example "vk" for "vk.com" site,
+					you can call them by write XPath or use keyboard shortcuts 
+				</li>
+				<li>
+					For example type in slovastick console //*[@id='getstarted']/ol/li[2]
+					for focus on this text
+				</li>
+				<li>
+					Slovastick can work like extension for Chrome, or like bookmarklet 
+					with manual loading in site 
+				</li>
+				<li>
+					Web developers can embed slovastick.js script for their sites 
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Shortcuts
+			</p>
+			<ol>
+				<li>
+					"Up + Down", or "Shift + Control" with pause - focus on slovastick console
+				</li>
+				<li>
+					"Shift + Control + mouse move" - determine element's XPath, under mouse cursor
+				</li>
+				<li>
+					"Arrow Up", or "Shift" - move to preceding element
+				</li>
+				<li>
+					"Arrow Down", or "Control" - move to following element
+				</li>
+				<li>
+					"Arrow Left", or "Shift" with pause - move to ancestor element
+				</li>
+				<li>
+					"Arrow Right", or  "Control" with pause - move to child element
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				In plan for future versions
+			</p>
+			<ol>
+				<li>
+					Write XML plugins for popular websites
+				</li>
+				<li>
+					Make hisory save for comands and XML
+				</li>
+				<li>
+					Maybe, write code for test automation  with 
+					Selenium, javascript-webdriver.
+					Maybe, use Mind Maps for that?
+				</li>
+				<li>
+					Maybe, make voice navigation with commands left, right, find, etc.
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Collect ideas
+			</p>
+			<ol>
+				<li>
+					If you have good idea or questions, send me an email - slovastick@mail.ru
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				External links
+			</p>
+			<ol>
+				<li>
+					Learn XML 
+					<ol>
+						<li>
+							<a href="http://en.wikipedia.org/wiki/XML">
+								http://en.wikipedia.org/wiki/XML
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					Learn XPath 
+					<ol>
+						<li>
+							<a href="http://www.w3.org/TR/xpath/">
+								http://www.w3.org/TR/xpath/
+							</a>
+						</li>
+						<li>
+							<a href="http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx">
+								http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					Look how to work with XML and web test automation in "Google"
+					<ol>
+						<li>
+							<a href="http://ringoframework.blogspot.ru/">
+								http://ringoframework.blogspot.ru/
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					Look for other stuff for web navigation, named "Vimperator".
+					<ol>
+						<li>
+							<a href="http://en.wikipedia.org/wiki/Vimperator">
+								http://en.wikipedia.org/wiki/Vimperator
+							</a>
+						</li>
+					</ol>
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				License
+			</p>
+			<ol>
+				<li>
+					If you found patty on table, are you asked license agreement to eat him?
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Other sites
+			</p>
+			<ol>
+				<li>
+					Test me on vk.com
+					<ol>
+						<li>
+							<a href="http://vk.com">
+								http://vk.com
+							</a>
+						</li>
+					</ol>
+				</li>
+			</ol>
+		</li>
+	</ul>
+	<div>
+		Slovastick can work like extension for 
+		<a href="https://www.dropbox.com/s/yu5ziq6fg32l0ni/slovastick_0.0.1.crx">
+			Chrome
+		</a>
+<!-- 	, embed to website or one-page calling 
+		<a href="javascript:(function(){var script=document.createElement('script');
+		script.src=encodeURI('http://localhost:8077/slovastick/slovastick.js#' 
+		+new Date().getTime());document.body.appendChild(script);}())">
+			slovastick-bookmark
+		</a>
+		for Chrome and Firefox -->
+	</div>
+</body>
+</html>

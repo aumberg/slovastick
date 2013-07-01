@@ -1,0 +1,23 @@
+<!-- <?xml version="1.0" encoding='UTF-8'?> -->
+HTML
+<s title="shortcuts">
+	<login 		title="login field" 	s-see="//input[@id='login']"/>
+	<email 		title="email field" 	s-see="//input[@id='email']|//input[@id='quick_email']"/>
+	<enter 		title="enter to site" 	s-see="//*[@id='quick_login_button']"/>
+	<password 	title="password field" 	s-see="//input[@id='pass']|//input[@id='password']|//input[@id='quick_pass']"/>
+	<close/>
+	<vk s-go="http://vk.com"/>
+</s>
+<main>
+	<div title="slovastick panel" id="slovastick_panel" style="position:fixed; left:10px; bottom:30px; width:300px; font-size:20px; z-index:2147483646; display:block;" s-null="">
+		<div id="slovastick_result" title="slovastick result" style="background-color:#EEE;"> 
+			focusing by press up + down arrows
+		</div>
+		<input id="slovastick_console" title="slovastick console, focusing by shift + control" type="text" value="//slovastick" style="width:100%;">
+	</div>
+	<history title="history block for save program history" s-null="">
+		<global></global>
+		<local></local>
+		<temp></temp>
+	</history>
+</main>

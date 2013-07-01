@@ -1,0 +1,28 @@
+<!-- <?xml version="1.0" encoding='UTF-8'?> -->
+HTML
+<vk s-go="http://vk.com" s-go-route=".*">
+	<!-- autoriation. OMG! there maybe CAPTCHA -->
+	<login 		title="login field" 	s-see="//s/email"></login>
+	<password 	title="pass field" 		s-see="//s/password"></password>
+	<enter 		title="enter button" 	s-see="//s/enter" s-click="" s-null=""></enter>
+	<!-- main page -->
+	<main s-see="//*[@id='myprofile']" 	s-click=""></main>
+	<!-- music -->
+	<music s-see="//*[@id='side_bar']/ol/li[5]/a" s-click="">
+		<my s-see="//*[@id='album0']" 	s-click="">
+			<song s-see="//*[@id='audios_list']/descendant::*[contains(@class, 'info fl_l')]" s-see-position="1">
+				<play s-see-context=".." s-see="ancestor::*[2]/*[@onclick][1]" s-click=""></play>
+			</song>
+		</my>
+		<pop s-see="//*[@id='top_audios']/div" s-click="">
+			<search title="search music" s-see="//*[@id='s_search']"></search>
+			<ele s-see="preceding-sibling::*[1]" s-click="" s-null=""></ele>
+			<song s-see="//*[@id='audios_list']/descendant::*[contains(@class, 'audio  fl_l')]" s-see-position="1">
+				<play title="play song" s-see-context=".." s-see="*[@onclick][1]" s-click=""></play>
+				<add title="add to My music">
+					<ok s-see-context="../.." s-see="//*[@class='actions']/*[@onclick]" s-click=""></ok>
+				</add>
+			</song>
+		</pop>
+	</music>
+</vk>
