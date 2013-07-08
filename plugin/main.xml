@@ -1,21 +1,23 @@
 <!-- <?xml version="1.0" encoding='UTF-8'?> -->
 HTML
-<s title="shortcuts">
-	<login 		title="login field" 	s-see="//input[@id='login']"/>
-	<email 		title="email field" 	s-see="//input[@id='email']|//input[@id='quick_email']"/>
-	<enter 		title="enter to site" 	s-see="//*[@id='quick_login_button']"/>
-	<password 	title="password field" 	s-see="//input[@id='pass']|//input[@id='password']|//input[@id='quick_pass']"/>
-	<close/>
-	<vk s-go="http://vk.com"/>
-</s>
-<main>
-	<div title="slovastick panel" id="slovastick_panel" style="position:fixed; left:10px; bottom:30px; width:300px; font-size:20px; z-index:2147483646; display:block;" s-null="">
-		<div id="slovastick_result" title="slovastick result" style="background-color:#EEE;"> 
+<e title="shortcuts for elements">
+	<login 		s-see="//input[contains(@id, 	'login') and not(contains(@*, 'hidden'))]" s-title="login field"></login>
+	<email 		s-see="//input[contains(@id, 	'email') and not(contains(@*, 'hidden'))]" s-title="email field"></email>
+	<loginemail s-see-context=".." s-see="login|email"  s-title="login or email"></loginemail>
+	<pass 		s-see="//input[contains(@id, 	'pass')  and not(contains(@*, 'hidden'))]" s-title="password field"></pass>
+	<search 	s-see="//input[contains(@id,    'search')and not(contains(@*, 'hidden'))]" s-title="search on site"></search>
+	<enter 		s-see="//button[(contains(@id, 	'login') or contains(@onclick, 	'login')) and not(contains(@*, 'hidden'))]"	s-title="enter to site"></enter>
+	<vk 			s-go="http://vk.com" 			s-title="go to vkontakte"></vk>
+	<!-- <music-yandex 	s-go="http://music.yandex.ru/" 	s-title="go to music yandex"></music-yandex> -->
+</e>
+<main s-null="">
+	<div 		title="slovastick panel" 	id="slovastick_panel" 	style="position:fixed; left:10px; bottom:30px; width:300px; font-size:20px; z-index:2147483646; display:block;">
+		<div 	title="slovastick result" 	id="slovastick_result"  style="background-color:#EEE;"> 
 			focusing by press up + down arrows
 		</div>
-		<input id="slovastick_console" title="slovastick console, focusing by shift + control" type="text" value="//slovastick" style="width:100%;">
+		<input 	title="slovastick console, focusing by shift + control" id="slovastick_console"  type="text" value="//slovastick" style="width:100%;"/>
 	</div>
-	<history title="history block for save program history" s-null="">
+	<history 	title="history block for save program history">
 		<global></global>
 		<local></local>
 		<temp></temp>

@@ -8,33 +8,33 @@
 	<!-- start slovastick block -->
 	<slovastick>
 		<hello-world s-go="" s-go-route=".*">
-			<description title="description" s-see="//*[@id='description']"></description>
-			<getstarted title="get started" s-see="//*[@id='getstarted']/p">
+			<description s-see="//*[@id='description']" s-title="description"></description>
+			<getstarted s-see="//*[@id='getstarted']/p" s-title="get started">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</getstarted>
-			<shortcuts title="about shortcuts" s-see="/html/body/ul/li[2]/p">
+			<shortcuts s-see="/html/body/ul/li[2]/p" s-title="about shortcuts">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</shortcuts>
-			<plan title="about plan" s-see="/html/body/ul/li[3]/p">
+			<plan s-see="/html/body/ul/li[3]/p" s-title="about plan">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</plan>
-			<idea title="about ideas" s-see="/html/body/ul/li[4]/p">
+			<idea s-see="/html/body/ul/li[4]/p" s-title="about ideas">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</idea>
-			<links title="external links" s-see="/html/body/ul/li[5]/p">
+			<links s-see="/html/body/ul/li[5]/p" s-title="external links">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
 					<ref s-see-context=".." s-see-position="1" s-see="//a"></ref>
 				</item>
 			</links>
-			<license title="license" s-see="/html/body/ul/li[6]/p">
+			<license s-see="/html/body/ul/li[6]/p" s-title="license">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</license>
-			<other title="test on other sites" s-see="/html/body/ul/li[7]/p">
+			<other s-see="/html/body/ul/li[7]/p" s-title="test on other sites">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
 					<ref s-see-context=".." s-see="//a"></ref>
 				</item>
 			</other>
-			<bookmaring title="bookmaring" s-see="/html/body/div[2]/a"></bookmaring>
+			<bookmaring s-see-position="1" s-see="/html/body/div[2]/a" s-title="bookmaring"></bookmaring>
 		</hello-world>
 	</slovastick>
 	<!-- end slovastick block -->
@@ -215,16 +215,16 @@
 	</ul>
 	<div>
 		Slovastick can work like extension for 
-		<a href="https://www.dropbox.com/s/yu5ziq6fg32l0ni/slovastick_0.0.1.crx">
+		<a href="http://словастик.рф/build/output/slovastick.crx">
 			Chrome
 		</a>
-<!-- 	, embed to website or one-page calling 
+		, embed to website or one-page calling 
 		<a href="javascript:(function(){var script=document.createElement('script');
-		script.src=encodeURI('http://localhost:8077/slovastick/slovastick.js#' 
+		script.src=encodeURI('http://словастик.рф/slovastick.js#' 
 		+new Date().getTime());document.body.appendChild(script);}())">
 			slovastick-bookmark
 		</a>
-		for Chrome and Firefox -->
+		for Chrome and Firefox
 	</div>
 </body>
 </html>

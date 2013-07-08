@@ -16,7 +16,7 @@
 		program: {
 			name 		: "slovastick",
 			description : "slovastick - web-based DOM manipulator",
-			version 	: "0.0.1",
+			version 	: "0.0.2",
 			debugMod	: false,
 			status		: "off",
 			debugSrc 	: "http://localhost:8077/slovastick/",
@@ -26,7 +26,7 @@
 		},
 		user: {
 			sound: {
-				volume	: 80
+				volume	: 70
 			}
 		},
 		browser: {
@@ -216,11 +216,6 @@
 					}
 				}
 
-				if (s.lib.xpath.finded)
-					s.lib.xpath.finded.push(masElements)
-				else
-					s.lib.xpath.finded = [masElements];
-
 				return masElements;
 			}
 			else if ("object" === typeof elementOrStrXPath){
@@ -401,13 +396,12 @@
 				return false;
 			//
 			var offset 			= $(element).offset(),
-				defaults 		= {"duration": 300, "easing": "swing"},
-				scrollTopValue 	= parseInt(offset.top) - Math.round($(window).height()/2) + "px";
+				scrollTopValue 	= parseInt(offset ? offset.top : 0) - Math.round($(window).height()/2) + "px";
 
 			if ($.isPlainObject(scrollTopParams))
 				scrollTopParams	= $.extend(defaults, scrollTopParams);
 			else
-				scrollTopParams	= defaults;
+				scrollTopParams	= {"duration": 300, "easing": "swing"};
 
 			$("html, body")
 				.stop(true)
@@ -417,33 +411,34 @@
 		"designate": function(masElements, scrollTopParams) {
 			if (!masElements)
 				masElements = [];
+			else if (!$.isArray(masElements))
+				masElements = [masElements];
 
-			masElements = $.isArray(masElements) ? masElements : [masElements];
+			$.each(masElements, function(index, element) {
+				element 	= $(element);
 
-			for (var i in masElements) {
-				var elements 	= $(masElements[i]),
-					offset 		= elements.offset();
+				var offset 	= element.offset();
 
 				if (scrollTopParams)
-					s.lib.scrollTop(elements.focus().get(0), scrollTopParams);
+					s.lib.scrollTop(element.focus().get(0), scrollTopParams);
 
 				$("<div s-null>")
 					.css({
 						"position": "absolute",
-						"width": elements.css("width"),
-						"height": elements.css("height"),
+						"width": element.css("width"),
+						"height": element.css("height"),
 						"left": offset.left,
 						"top": offset.top,
 						"background-color": "green",
 						"z-index": "2147483647"
 					})
 					.prependTo(s.opt.slovastick)
-					.delay().animate({"opacity": 0}, 400, function (){
+					.delay().animate({"opacity": 0}, 400, function() {
 						$(this).remove();
 					});
 
 				// // !!! don't animate internal blocks !!!
-				// elements.each(function(index, element) {
+				// element.each(function(index, element) {
 				// 	if (-1 === $.inArray(element.tagName, ["IMG", "OBJECT"])) {
 				// 		var oldBgcolor = $(element).css("background-color");
 				// 		$(element).css("background-color", "green");
@@ -455,7 +450,9 @@
 				// 		return;
 				// 	}
 				// })
-			}
+			});
+
+			return true;
 		},
 		// change console value to near element and run him
 		"move": function(strDirection) {
@@ -547,9 +544,12 @@
 				s.opt.result 	= $("#slovastick_result", 	s.opt.slovastick);
 				s.opt.panel 	= $("#slovastick_panel", 	s.opt.slovastick);
 				s.opt.console 	= $("#slovastick_console", 	s.opt.slovastick);
-				s.go();
-				s.ok("I loaded plugin");
-				// 
+
+				if (s.go())
+					s.lib.move("right");
+				else
+					s.ok("I loaded plugin");
+
 				if ("function" === typeof callback)
 					callback();
 			}
@@ -565,7 +565,7 @@
 					}
 					catch (e) {
 						try {
-							var elements = $($.parseHTML(data, true)); //keepScripts = true
+							var elements = $($.parseHTML(data, false)); //keepScripts = true
 							elements.each(parse);
 							finaly();
 						}
@@ -574,7 +574,7 @@
 						}
 					}
 				},
-				error: finaly
+				complete: callback
 			});
 		}
 	};
@@ -892,29 +892,34 @@
 	s["go"] = function(ele) {
 		if (!ele) {
 			var pages 	= s.lib.xpath("//slovastick//*[@s-go]"),
-				href  	= window.document.location.href;
+				href  	= window.document.location.href,
+				isNoEle = true;
 
-			for (var i in pages) {
-				var url 	= pages[i].attr("s-go"),
-					route 	= pages[i].attr("s-go-route");
+			$.each(pages, function(index, page){
+				var url 	= page.attr("s-go"),
+					route 	= page.attr("s-go-route");
 
 				if (route && (url === href.slice(0, url.length))) {
-					var element = s.lib.xpath("*[1]", pages[i])[0];
+					s.opt.console.val(s.lib.xpath(page));
 
-					if (element) {
-						s.opt.console.val(s.lib.xpath(element));
-						s.lib.designate(element, true);
-						
-						break;
-					}
+					return isNoEle = false;
 				}
-			}
+			})
+
+			return !isNoEle;
+		}
+		//
+		var url 	= ele.key("go").value;
+		// go to element
+		if ( !(/^[A-Za-z]+:\/\//.test(url)) ) {
+			s.opt.console.val(url);
+			s.lib.button.keyup().keydown("enter");
+			s.opt.console.keydown();
 
 			return;
 		}
-		//
-		var url 	= ele.key("go").value,
-			route 	= ele.key("go-route").value,
+		// go to url
+		var	route 	= ele.key("go-route").value,
 			equal 	= (window.document.location.href.slice(0, url.length) === url),
 			pname 	= window.document.location.pathname,
 			path 	= ("/" === pname[0]) ? pname.slice(1) : pname;
@@ -924,11 +929,15 @@
 	};
 	// value setting to element
 	s["value"] = function(ele) {
-		ele[0].val(ele.key("value").value);
+		$(ele[0]).val(ele.key("value").value);
 	};
 	// click on element
 	s["click"] = function(ele) {
-		ele[0].click();
+		$(ele[0]).click();
+	};
+	// title setting to element
+	s["title"] = function(ele) {
+		$(ele[0]).attr("title", ele.key("title").value);
 	};
 	// 
 	s["null"] = function(ele) {
