@@ -19,39 +19,44 @@
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
 			</plan>
 			<idea s-see="/html/body/ul/li[4]/p" s-title="about ideas">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
+					<ref  s-see-context=".." s-see="//a"></ref>
+				</item>
 			</idea>
 			<links s-see="/html/body/ul/li[5]/p" s-title="external links">
 				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
-					<ref s-see-context=".." s-see-position="1" s-see="//a"></ref>
+					<ref s-see-context=".." s-see-position="1" s-see=".//a"></ref>
 				</item>
 			</links>
 			<license s-see="/html/body/ul/li[6]/p" s-title="license">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+				<item s-see-context=".." s-see-position="1" s-see="..//a|../ol/li"></item>
 			</license>
 			<other s-see="/html/body/ul/li[7]/p" s-title="test on other sites">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
-					<ref s-see-context=".." s-see="//a"></ref>
-				</item>
+				<ref  s-see-context=".." s-see-position="1" s-see="..//a"></ref>
 			</other>
 			<bookmaring s-see-position="1" s-see="/html/body/div[2]/a" s-title="bookmaring"></bookmaring>
 		</hello-world>
 	</slovastick>
 	<!-- end slovastick block -->
 	<div id="description">
-		Slovastick - web-based DOM manipulator. It work with special element attributes
-		"s-", who run actions for him, after write XPath in console or pressed keyboard
-		shortcuts. You can automate web-surfing, navigate and edit HTML or XML document.
-		<br/>
-		<br/>
-		<div style="text-align:center;">
-			<div>
-				WARNING! Currently that program in DEEP-DEEP DEVELOPING stage. 
-				Please note. Currently work in Chrome, Firefox and Opera.
+		<h3>
+			Slovastick - web-based DOM manipulator. It work with special element attributes
+			"s-", who run actions for him, after write XPath in console or pressed keyboard
+			shortcuts. You can automate web-surfing, navigate and edit HTML or XML document.
+			<br/>
+			<br/>
+			<div style="text-align:center;">
+				<div>
+					WARNING! Currently that program in 
+					<h2>
+						DEEP-DEEP DEVELOPING stage.
+					</h2> 
+					Please note.
+				</div>
+				<br/>
 			</div>
 			<br/>
-		</div>
-		<br/>
+		</h3>
 	</div>
 	<ul>
 		<li id="getstarted">
@@ -131,6 +136,12 @@
 				<li>
 					If you have good idea or questions, send me an email - slovastick@mail.ru
 				</li>
+				<li>
+					If you have information about bugs write to  
+					<a href="https://github.com/aumberg/slovastick/issues">
+						github
+					</a>
+				</li>
 			</ol>
 		</li>
 		<li>
@@ -193,28 +204,32 @@
 				<li>
 					If you found patty on table, are you asked license agreement to eat him?
 				</li>
+				<li>
+					<a href="https://github.com/aumberg/slovastick">
+						That project on github 
+					</a>
+				</li>
 			</ol>
 		</li>
 		<li>
 			<p>
-				Other sites
+				Testing on other sites (need slovastick browser's extension)
 			</p>
 			<ol>
 				<li>
-					Test me on vk.com
-					<ol>
-						<li>
-							<a href="http://vk.com">
-								http://vk.com
-							</a>
-						</li>
-					</ol>
+					<a href="http://vk.com">
+						vkontakte
+					</a>
 				</li>
 			</ol>
 		</li>
 	</ul>
 	<div>
-		Slovastick can work like extension for 
+		Slovastick can work like 
+		<a href="http://словастик.рф/build/output/">
+			extension 
+		</a>
+		for 
 		<a href="http://словастик.рф/build/output/slovastick.crx">
 			Chrome
 		</a>

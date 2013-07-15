@@ -7,19 +7,17 @@
 		else if ("object" === typeof param)
 			$.extend(s, objExtend);
 		else
-			s.on();
-
-		return s;
+			check({after:[s.on]});
 	};
 	//
 	s.opt = {
 		program: {
 			name 		: "slovastick",
-			description : "slovastick - web-based DOM manipulator",
-			version 	: "0.0.2",
-			debugMod	: false,
+			description	: "slovastick - web-based DOM manipulator",
+			version 	: "0.0.3",
+			debugMod	: false, //false || true || "all"
 			status		: "off",
-			debugSrc 	: "http://localhost:8077/slovastick/",
+			debugSrc 	: "http://localhost/",
 			programSrc	: "",
 			pluginSrc	: "",
 			soundSrc	: ""
@@ -78,7 +76,7 @@
 				// last pressed buttons
 				last 		: {},
 				// count of pressed buttons
-				count		: function() {
+				"count"		: function() {
 					result = 0;
 
 					$.each(b.name, function(buttonName) {
@@ -195,25 +193,40 @@
 				else if ("/" === strXPath[0])
 					strXPath = "." + strXPath;
 
-				if (!contexts || !contexts.length)
-					masElementsContext = [window.document];
-				else
+				if (contexts)
 					masElementsContext = $.isArray(contexts) ? contexts : [contexts];
-
+				else
+					masElementsContext = [window.document];
+					
 				for (var i in masElementsContext) {
 					var c = $(masElementsContext[i])[0];
 
 					try {
-						// s.log("try find " + strXPath, c);
 						xpath = window.document.evaluate(strXPath, c, null, 0, null);
 					}
 					catch (e) {
-						return masElements;
+						return [];
 					}
 
 					for (var node; xpath && (node = xpath.iterateNext()); ) {
 						masElements.push($(node));
 					}
+				}
+
+				if ("all" === s.opt.program.debugMod) {
+					var args = ["search " + strXPath]
+
+					if (!contexts || !contexts.length)
+						args.push("from context document")
+					else 
+						args = args.concat(["from contexts", masElementsContext]);
+
+					if (!masElements.length)
+						args.push("and nothing found!")
+					else 
+						args = args.concat(["and found", masElements]);
+
+					s.log.apply(this, args);
 				}
 
 				return masElements;
@@ -462,9 +475,9 @@
 			if (!element)
 				return s.err("I stop there...");
 
-			var that 		= s.lib.ele(element),
+			var ele 		= s.lib.ele(element),
 				isUpOrDown 	= (-1 !== $.inArray(strDirection, ["up", "down"])),
-				ind 		= parseInt(that.key("see-position").value) - 1,
+				ind 		= (parseInt(ele.key("see-position").value) - 1 || 0),
 				direct 		= {
 					up 		: "/preceding-sibling::*",
 					down 	: "/following-sibling::*",
@@ -473,9 +486,7 @@
 				};
 			// change attribute s-see-position
 			if ((-1 < ind) && isUpOrDown) {
-				var res = that
-						.key("see-position", null)
-						.see();
+				var res = ele.key("see-position", null).see();
 
 				if (!res[ind])
 					ind = ((0 < ind) && res.length) ? res.length - 1 : 0;
@@ -493,7 +504,7 @@
 					var res2 = res[ind].run();
 
 					if (res2) {
-						that.attr("s-see-position", (ind + 1).toString());
+						$(ele[0]).attr("s-see-position", (ind + 1).toString());
 						s.ok("I move " + strDirection);
 
 						return s.lib.designate(res2, true);
@@ -507,17 +518,17 @@
 				&& ("left" === strDirection || "up" === strDirection))
 					masSiblings.reverse();
 
-			for (var i = 0; i < masSiblings.length; i++) {
-				var that = s.lib.ele(masSiblings[i]),
-					res = that.run();
+			for (var i 	= 0; i < masSiblings.length; i++) {
+				var ele = s.lib.ele(masSiblings[i]);
 
-				if (!res) {
-					that.attr("s-see-position", "1");
-					res = that.run();
-				}
+				if (ele.key("see") && !ele.see().length)
+					ele.key("see-position", "1");
+
+				var res = ele.run();
 
 				if (res) {
-					s.opt.console.val(s.lib.xpath(masSiblings[i]));
+					s.opt.console.val(s.lib.xpath(ele));
+					$(ele[0]).attr("s-see-position", ele.key("see-position").value);
 					s.ok("I move " + strDirection);
 
 					return s.lib.designate(res, true);
@@ -583,12 +594,17 @@
 		$(window).add($("*", "body"))
 			.off(".slovastick .slovastick-console .slovastick-move .slovastick-mouseover");
 		
-		s.opt.panel.css("display", "none");
+		if (s.opt.panel)
+			s.opt.panel.css("display", "none");
+
 		s.opt.program.status = "off";
 	};
 	//
 	s["on"] = function () {
 		s["off"]();
+
+		if (!s.opt.panel)
+			return null;
 
 		s.opt.panel
 			.attr("title", s.opt.program.description + ", version " + s.opt.program.version)
@@ -839,53 +855,45 @@
 	// go recursive through elements and collect their s-attributes
 	// !!!can't protect loop calling!!!
 	s["see"] = function(ele) {
-		var resultMasEle 	= (undefined === ele.key("see").value) ? [ele] : [];
+		if (!ele.key("see").value)
+			return [];
 
-		if (!resultMasEle.length) {
-			var attPosition = ele.key("see-position"),
-				attContext	= ele.key("see-context");
+		var resultMasEle 	= [],
+			masEleContexts 	= [window.document];
+		
+		if (ele.key("see-context").value) {
+			masEleContexts 	= s.lib.xpath(ele.key("see-context").value, ele);
 
-			ele
-				.key("see-position", null)
-				.key("see-context", null);
+			if (!masEleContexts.length)
+				return [];
 
-			var attSee 		= ele.key("see"),
-				attsRight 	= ele.key().slice(attSee.index + 1),
-				attsLeft  	= ele.key().slice(0, attSee.index);
-
-			if (attContext.value) {
-				var eleContext = s.lib.xpath(attContext.value, ele)[0];
-
-				if (!eleContext)
-					return [];
-
-				var masElementsContext = s.lib.ele(eleContext).see();
-			}
-			else if ( !(/^[\s\(]*\//.test(attSee.value)) ) {
-				var masElementsContext = [ele];
-			}
-
-			var elements 	= s.lib.xpath(attSee.value, masElementsContext),
-				mas 		= s.lib.masEle(elements);
-
-			for (var i = 0; i < mas.length; i++) {
-				var ms = mas[i].see();
-
-				if (!ms.length && !attSee["try"])
-					return [];
-
-				for (var j = 0; j < ms.length; j++) {
-					var att = ms[j].key();
-					ms[j].key(null).key(att.concat(attsRight));
-				}
-
-				resultMasEle = resultMasEle.concat(ms);
-			}
-
-			if (attPosition.value)
-				resultMasEle = [resultMasEle[parseInt(attPosition.value) - 1]];		
+			masEleContexts 	= s.lib.ele(masEleContexts[0]).see();
+		}
+		else if ( !(/^[\s\(]*\//.test(ele.key("see").value)) ) {
+			masEleContexts 	= [ele];
 		}
 
+		var elements = s.lib.xpath(ele.key("see").value, masEleContexts);
+
+		for (var i = 0; i < elements.length; i++) {
+			var ele2 		= s.lib.ele(elements[i]),
+				masEle 		= ele2.key("see").value ? ele2.see() : [ele2];
+
+			if (!masEle.length && !ele.key("try").value)
+				return [];
+
+			for (var j = 0; j < masEle.length; j++) {
+				masEle[j].key(ele.key().slice(ele.key("see").index + 1));
+			}
+
+			resultMasEle 	= resultMasEle.concat(masEle);
+		}
+
+		if (ele.key("see-position").value) {
+			var element 	= resultMasEle[parseInt(ele.key("see-position").value) - 1];
+			resultMasEle 	= element ? [element] : [];	
+		}
+		
 		return resultMasEle;
 	};
 	// go to url or element and change console value
@@ -947,34 +955,27 @@
 	// 	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	//
 	function check(param) {
-		if (param) {
-			if (param.before)
-				check.before ? check.before.concat(param.before) : check.before = param.before;
-	
-			if (param.require)
-				check.require ? check.require.concat(param.require) : check.require = param.require;
+		var blocks = ["before", "require", "after"];
 
-			if (param.after)
-				check.after ? check.after.concat(param.after) : check.after = param.after;
+		for (i in blocks) {
+			var block = blocks[i];
+
+			if (!check[block])
+				check[block] = [];
+
+			if (param && param[block] && param[block][0])
+				check[block] = check[block].concat(param[block]);
 		}
 
-		if (check.before && check.before[0]) {
-			while (check.before[0]) {
-				check.before.shift()();
-			}
-
-			delete check.before;
+		while (check.before && check.before[0]) {
+			check.before.shift()();
 		}
 
 		if (check.require && check.require[0])
-			return check.require.shift()(); // :>
+			return check.require.shift()();
 
-		if (check.after && check.after[0]) {
-			while (check.after[0]) {
-				check.after.shift()();
-			}
-
-			delete check.after;
+		while (check.after && check.after[0]) {
+			check.after.shift()();
 		}
 	};
 	
