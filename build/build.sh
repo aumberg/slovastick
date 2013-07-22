@@ -5,7 +5,9 @@
 # for build extension - download "kango" framework
 # Kango - cross-browser extension framework - http://kangoextensions.com/
 
-   	mkdir slovastick_extension/src/common/res/ \
+	
+	kango/kango.py -h \
+&& 	mkdir slovastick_extension/src/common/res/ \
 && 	tar -c ../ --exclude ../build --exclude ../test | tar -C slovastick_extension/src/common/res/ -x \
 &&  rm -rf slovastick_extension/src/common/res/.git* \
 && 	kango/kango.py build slovastick_extension/ \

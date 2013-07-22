@@ -14,7 +14,7 @@
 		program: {
 			name 		: "slovastick",
 			description	: "slovastick - web-based DOM manipulator",
-			version 	: "0.0.3",
+			version 	: "0.0.4",
 			debugMod	: false, //false || true || "all"
 			status		: "off",
 			debugSrc 	: "http://localhost/",
@@ -27,10 +27,22 @@
 				volume	: 70
 			}
 		},
-		browser: {
-			"name"		: undefined,
-			"version"	: undefined
-		}
+		browser: (function() {
+			// code copied from http://code.jquery.com/jquery-migrate-1.0.0.js 
+			// and modified 
+			var ua 		= navigator.userAgent.toLowerCase(),
+				match 	= (/(chrome)[ \/]([\w.]+)/.exec(ua) 
+					|| /(webkit)[ \/]([\w.]+)/.exec(ua)
+					|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
+					|| /(msie) ([\w.]+)/.exec(ua)
+					|| ((ua.indexOf("compatible") < 0) && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua))
+					|| []);
+			// 
+			return {
+				"name" 		: (match[1] || ""),
+				"version" 	: (match[2] || "0")
+			}
+		}())
 	};
 	//
 	s.lib = {
@@ -157,7 +169,7 @@
 						if (!$.isArray(arguments[i]))
 							s.err("bad arg for 'has' function", arguments[i]);
 
-						for (var j in arguments[i]) {
+						for (var j = 0; j < arguments[i].length; j++) {
 							var name = arguments[i][j];
 
 							if (!b[name]) {
@@ -198,7 +210,7 @@
 				else
 					masElementsContext = [window.document];
 					
-				for (var i in masElementsContext) {
+				for (var i = 0; i < masElementsContext.length; i++) {
 					var c = $(masElementsContext[i])[0];
 
 					try {
@@ -261,40 +273,41 @@
 			}
 		},
 		// function for list-manipulating object data
-		"key": function(obj) {
+		"keychain": function(obj) {
 			obj["key"] = function(param, param2) {
-				obj.key.memory = (obj.key.memory || []);
-				// remove all keys
 				if (null === param) {
-					obj.key.memory = [];
+					// remove all keys
+					if (undefined === param2) {
+						obj.key.chain = [];
 
-					return obj;
+						return obj;
+					}
 				}
-				// get all keys
 				else if (undefined === param) {
+					// get all keys
 					if (undefined === param2)
-						return obj.key.memory;
+						return [].concat(obj.key.chain);
 				}
 				// 
 				else if ("string" === typeof param) {
 					// remove key
 					if (null === param2) {
-						var mem2 = [];
+						var list = [];
 
-						for (var i in obj.key.memory) {
-							if (param !== obj.key.memory[i].name)
-								mem2.push(obj.key.memory[i]);
+						for (var i = 0; i < obj.key.chain.length; i++) {
+							if (param !== obj.key.chain[i].name)
+								list.push(obj.key.chain[i]);
 						}
 
-						obj.key.memory = mem2;
+						obj.key.chain = list;
 
 						return obj;
 					}
 					// find key
 					else if (undefined === param2) {
-						for (var i = 0; i < obj.key.memory.length; i++) {
-							if (param === obj.key.memory[i].name)
-								return $.extend({}, obj.key.memory[i], {"index": i});
+						for (var i = 0; i < obj.key.chain.length; i++) {
+							if (param === obj.key.chain[i].name)
+								return $.extend({}, obj.key.chain[i], {"index": i});
 						}
 						// !!!return empty object!!!
 						return {};
@@ -308,12 +321,12 @@
 				else if ($.isArray(param)) {
 					// set keys
 					if (undefined === param2) {
-						for (var i in param) {
-							if ("object" !== typeof param[i])
-								throw ["when call key, bad first argument ", arguments];
+						$.each(param, function(index, key) {
+							if ("object" !== typeof key)
+								throw ["keychain: bad first argument", arguments];
 
-							obj.key(param[i]);
-						}
+							obj.key(key);
+						})
 
 						return obj;
 					}
@@ -322,20 +335,20 @@
 				else if ("object" === typeof param) {
 					// set key
 					if (undefined === param2) {
-						if ("string" !== typeof param.name || "string" !== typeof param.value)
-							throw ["when call key not setted key or value ", arguments];
+						if ("string" !== typeof param.name)
+							throw ["keychain: can't set value", arguments];
 
 						obj.key(param.name, null);
-						obj.key.memory.push(param);
+						obj.key.chain.push(param);
 
 						return obj;
 					}
 				}
 
-				throw ["key can't work with ", param, param2, " in ", obj];
+				throw ["keychain: bad arguments ", param, param2, " in ", obj];
 			}
 
-			return obj;
+			return obj.key(null);
 		},
 		// massive of elements with slovastick actions and virtual s-attributes
 		"masEle": function(masEle) {
@@ -344,7 +357,7 @@
 
 			$.each(masEle, function(index, ele) {
 				masEle[index] = ele = $(ele);
-				s.lib.key(ele);
+				s.lib.keychain(ele);
 				ele.and = {};
 
 				$.each(s, function(strKey, objValue) {
@@ -570,19 +583,12 @@
 				cache: false,
 				success: function(data) {
 					try {
-						var doc = $($.parseXML(data));
-						doc.children().each(parse);
+						var elements = $($.parseHTML(data, false)); //keepScripts = true
+						elements.each(parse);
 						finaly();
 					}
 					catch (e) {
-						try {
-							var elements = $($.parseHTML(data, false)); //keepScripts = true
-							elements.each(parse);
-							finaly();
-						}
-						catch (e) {
-							s.err("I can't find correct plugin for that site", e);
-						}
+						s.err("I can't find correct plugin for that site", e);
 					}
 				},
 				complete: callback
@@ -767,7 +773,7 @@
 	//
 	s["ok"] = function(result) {
 		if (s.opt.program.debugMod && window.console && "function" === typeof window.console.log)
-			window.console.log("[SLOVASTICK]  ok: ", Array.prototype.slice.call(arguments));
+			window.console.log("[SLOVASTICK]  ok: ", arguments);
 
 		s.lib.audio.playSignal("green");
 
@@ -776,7 +782,7 @@
 	//
 	s["log"] = function () {
 		if (s.opt.program.debugMod && window.console && "function" === typeof window.console.error)
-			window.console.error("[SLOVASTICK] log: ", Array.prototype.slice.call(arguments));
+			window.console.error("[SLOVASTICK] log: ", arguments);
 
 		s.lib.audio.playSignal("yellow");
 
@@ -785,7 +791,7 @@
 	//
 	s["err"] = function () {
 		if (s.opt.program.debugMod && window.console && "function" === typeof window.console.error)
-			window.console.error("[SLOVASTICK] err: ", Array.prototype.slice.call(arguments));
+			window.console.error("[SLOVASTICK] err: ", arguments);
 
 		s.lib.audio.playSignal("red");
 
@@ -847,7 +853,7 @@
 	//
 	s["try"] = function(ele) {
 		if ("*" === ele.key("try").value) {
-			$.each(ele.key.memory, function(i, attrib) {
+			$.each(ele.key.chain, function(i, attrib) {
 				attrib["try"] = "yes";
 			})
 		}
@@ -882,7 +888,9 @@
 			if (!masEle.length && !ele.key("try").value)
 				return [];
 
+
 			for (var j = 0; j < masEle.length; j++) {
+				x= ele.key().slice(ele.key("see").index + 1)
 				masEle[j].key(ele.key().slice(ele.key("see").index + 1));
 			}
 
@@ -918,6 +926,10 @@
 		}
 		//
 		var url 	= ele.key("go").value;
+
+		if (!url)
+			return;
+
 		// go to element
 		if ( !(/^[A-Za-z]+:\/\//.test(url)) ) {
 			s.opt.console.val(url);
@@ -935,6 +947,19 @@
 		if (!equal || !((new RegExp(route)).test(path)))
 			window.document.location.href = url;
 	};
+	//
+	// s["javascript"] = function(ele)
+	// {
+	// 	var ele = $(ele).clone(),
+	// 		organs = ele.children().remove(),
+	// 		text = ele.text();
+
+	// 	ele.remove();
+
+	// 	eval(text);
+
+	// 	return;
+	// },
 	// value setting to element
 	s["value"] = function(ele) {
 		$(ele[0]).val(ele.key("value").value);
@@ -957,7 +982,7 @@
 	function check(param) {
 		var blocks = ["before", "require", "after"];
 
-		for (i in blocks) {
+		for (var i = 0; i < blocks.length; i++) {
 			var block = blocks[i];
 
 			if (!check[block])
@@ -985,7 +1010,7 @@
 			if (!$ || ("2.0.2" !== ($.fn && $.fn.jquery))) {
 				var scripts = window.document.getElementsByTagName("script");
 
-				for (var i in scripts) {
+				for (var i = 0; i < scripts.length; i++) {
 					if (!scripts[i].getAttribute)
 						continue;
 
@@ -1021,20 +1046,6 @@
 		//
 		function() {
 			s.$ = $;
-			// code copied from http://code.jquery.com/jquery-migrate-1.0.0.js 
-			// and modified 
-			var ua 		= navigator.userAgent.toLowerCase(),
-				match 	= (/(chrome)[ \/]([\w.]+)/.exec(ua) 
-					|| /(webkit)[ \/]([\w.]+)/.exec(ua)
-					|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
-					|| /(msie) ([\w.]+)/.exec(ua)
-					|| ((ua.indexOf("compatible") < 0) && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua))
-					|| []);
-			// 
-			s.opt.browser = {
-				"name" 		: (match[1] || ""),
-				"version" 	: (match[2] || "0")
-			}
 			// on document loaded
 			$(check);
 		},

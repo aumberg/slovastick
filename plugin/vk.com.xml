@@ -1,6 +1,5 @@
-<!-- <?xml version="1.0" encoding='UTF-8'?> -->
-HTML
-<vk s-go="http://vk.com" s-go-route=".*">
+<?xml version="1.0" encoding='UTF-8'?>
+<vk s-title="the vkontakte social network" s-go="http://vk.com" s-go-route=".*">
 	<!-- autoriation. OMG! there maybe CAPTCHA -->
 	<email 	s-see="//e/email"></email>
 	<pass 	s-see="//e/pass"></pass>

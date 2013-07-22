@@ -1,7 +1,7 @@
 {
     "name"              :"slovastick",
     "description"       :"slovastick - web-based DOM manipulator",
-    "version"           :"0.0.3",
+    "version"           :"0.0.4",
     "creator"           :"Alexander Umberg, slovastick@mail.ru",
     "homepage_url"      :"http://словастик.рф/",
     "update_path_url"   :"http://словастик.рф/build/output/",
