@@ -6,4 +6,4 @@ slovastick
 shortcuts. You can automate web-surfing, navigate and edit HTML or XML document.*
 
 
-#### [Oficial web site http://словастик.рф](http://словастик.рф)
+#### [Official web site http://словастик.рф](http://словастик.рф)

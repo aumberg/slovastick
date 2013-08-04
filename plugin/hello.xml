@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<hello>
+	<e s-title="shortcuts for elements">
+		<login 		s-see="//input[contains(@id, 	'login') and not(contains(@*, 'hidden'))]" s-title="login field"></login>
+		<email 		s-see="//input[contains(@id, 	'email') and not(contains(@*, 'hidden'))]" s-title="email field"></email>
+		<loginemail s-see-context=".." s-see="login|email"  s-title="login or email"></loginemail>
+		<pass 		s-see="//input[contains(@id, 	'pass')  and not(contains(@*, 'hidden'))]" s-title="password field"></pass>
+		<search 	s-see="//input[contains(@id,    'search')and not(contains(@*, 'hidden'))]" s-title="search on site"></search>
+		<enter 		s-see="//button[(contains(@id, 	'login') or contains(@onclick, 	'login')) and not(contains(@*, 'hidden'))]"	s-title="enter to site"></enter>
+
+		<site>
+			<vk s-title="go to vkontakte">
+				<site-vk-go s-go="http://vk.com"></site-vk-go>
+			</vk>
+			<music-yandex s-title="go to music yandex">
+				<music-yandex-go s-go="http://music.yandex.ru/"></music-yandex-go>
+			</music-yandex>
+		</site>
+	</e>
+	<div id="slovastick_panel" s-title="slovastick console, focusing by shift + control" style="display:none; position:fixed; left:10px; bottom:10px; font-size:20px; z-index:2147483646; padding:5px;  background-color:#DDD; color:black; border: 1px solid black; border-radius: 10px;" s-null>
+		<div name="button">
+			<div name="program" style="float:left;"></div>
+			<div style="float:left;">|</div>
+			<div style="float:left;">
+				<select name="mode">
+					<option selected>Command</option>
+					<option>Info</option>
+				  <!-- <option>Youtube</option> -->
+				</select>
+			</div>
+			<div style="float:left;">|</div>
+			<div style="float:left;">
+				<select name="language">
+					<option selected>English</option>
+					<option>Russian</option>
+				</select>
+			</div>
+			<div style="float:left;">|</div>
+			<div style="float:left;">
+				<select name="sound">
+				  <option>Sound 100</option>
+				  <option selected>Sound 75</option>
+				  <option>Sound 50</option>
+				  <option>Sound 25</option>
+				  <option>Sound 0</option>
+				</select>
+			</div>
+			<div style="float:left;">|</div>
+			<button name="kick" style="float:left;">⇄</button>
+<!-- 			<div style="float:left;">|</div>
+			<button name="resize" style="float:left;">▣</button> -->
+		</div>
+		<textarea name="console" mode="xpath" style="font-size:20px; height:35px;"></textarea>
+	</div>
+	<history s-title="history block for save program history" s-null>
+		<global></global>
+		<local></local>
+		<temp></temp>
+	</history>
+</hello>

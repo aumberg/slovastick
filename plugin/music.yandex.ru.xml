@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<music-yandex s-title="listen music on yandex!" s-go="http://music.yandex.ru/" s-go-route=".*" s-move="right">
+	<e s-null>
+		<sound>
+			<play 		s-shortcut="pleer play"></play>
+			<stop 		s-see="//*[@class='b-jambox__button b-jambox__play b-jambox__playing']" s-click></stop>
+			<pleer-play s-see="//*[@class='b-jambox__button b-jambox__play']" 					s-click></pleer-play>
+			<radio-play s-see="//*[@id='tag-genre']//*[@class='b-radio__title']" 				s-click></radio-play>
+		</sound>
+		<genre>
+			<pop 			s-see="//*[@href='#!/top/tracks/genre/pop']" 			s-click  	s-title="pop music" 		></pop>
+			<jazz 			s-see="//*[@href='#!/top/tracks/genre/jazz']" 			s-click  	s-title="jazz music" 		></jazz>
+			<rock 			s-see="//*[@href='#!/top/tracks/genre/rock']" 			s-click  	s-title="rock music" 		></rock>
+			<folk 			s-see="//*[@href='#!/top/tracks/genre/folk']" 			s-click  	s-title="folk music" 		></folk>
+			<classic 		s-see="//*[@href='#!/top/tracks/genre/classical']" 		s-click  	s-title="classic music" 	></classic>
+			<electronic 	s-see="//*[@href='#!/top/tracks/genre/electronics']" 	s-click  	s-title="electronic music" 	></electronic>
+			<dance 			s-see="//*[@href='#!/top/tracks/genre/dance']" 			s-click  	s-title="dance music" 		></dance>
+			<rap 			s-see="//*[@href='#!/top/tracks/genre/rap']" 			s-click  	s-title="rap music" 		></rap>
+			<alternative 	s-see="//*[@href='#!/top/tracks/genre/alternative']" 	s-click  	s-title="alternative music" ></alternative>
+			<relax 			s-see="//*[@href='#!/top/tracks/genre/relax']" 			s-click  	s-title="relax music" 		></relax>
+			<country 		s-see="//*[@href='#!/top/tracks/genre/country']" 		s-click  	s-title="country music" 	></country>
+			<blues 			s-see="//*[@href='#!/top/tracks/genre/blues']" 			s-click  	s-title="blues music" 		></blues>
+			<metal 			s-see="//*[@href='#!/top/tracks/genre/metal']" 			s-click  	s-title="metal music" 		></metal>
+			<estrada 		s-see="//*[@href='#!/top/tracks/genre/estrada']" 		s-click  	s-title="estrada music" 	></estrada>
+			<rnb 			s-see="//*[@href='#!/top/tracks/genre/rnb']" 			s-click  	s-title="rnb music" 		></rnb>
+			<soundtrack 	s-see="//*[@href='#!/top/tracks/genre/soundtrack']" 	s-click  	s-title="soundtrack music" 	></soundtrack>
+			<reggae 		s-see="//*[@href='#!/top/tracks/genre/reggae']" 		s-click  	s-title="reggae music" 		></reggae>
+			<punk 			s-see="//*[@href='#!/top/tracks/genre/punk']" 			s-click  	s-title="punk music" 		></punk>
+			<shanson 		s-see="//*[@href='#!/top/tracks/genre/shanson']" 		s-click  	s-title="shanson music" 	></shanson>
+		</genre>
+	</e>
+
+	<search s-shortcut="search"></search>
+<!-- 
+	
+	<albums s-see="(//*[@class='b-trigger__trigger__i2'])[3]//a"  	s-click s-title="albums" >
+		<album 	s-see-position="1" 	s-see="//*[@class='b-albums__title']/a">
+			<artist s-see-context=".." s-see="." s-click></artist>
+		</album>
+		<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
+	</albums>
+
+	<artists s-see="(//*[@class='b-trigger__trigger__i2'])[4]//a"  	s-click s-title="artists" >
+		<artist 	s-see-position="1" 	s-see="//*[@id='js-content']//*[contains(@class, 'b-artist-group')]/a">
+			<artist s-see-context=".." 	s-see="." s-click></artist>
+		</artist>
+		<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
+	</artists> 
+ -->
+
+
+	<radio s-see="//*[@id='tag-genre']//*[@class='b-radio__title']" s-title="radio">
+		<play s-shortcut="radio play"></play>
+		<stop s-shortcut="stop"></stop>
+	</radio>
+
+	<listen-now s-see="//*[@id='js-content']/div[7]/div[2]/h1" s-title="what listen now?">
+		<song s-see-position="1" s-see="//*[@id='js-content']/div[8]/*">
+			<play 	s-see-context=".." 	s-see="//*[@class='b-play__i']" s-click></play>
+			<stop 	s-shortcut="stop"></stop>
+		</song>
+	</listen-now>
+
+	<genre s-see-position="1" s-see="//e/genre/*"></genre>
+</music-yandex>
