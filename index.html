@@ -1,81 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>slovastick - web-based DOM manipulator</title>
+	<title>Slovastick - web-based DOM manipulator</title>
 	<script type="text/javascript" src="slovastick.js"></script>
+	<script type="text/javascript">
+		// slovastick(function(s) {
+		// 	s.say("Hello world!");
+		// })
+	</script>
 </head>
-<body>
-	<!-- start slovastick block -->
-	<slovastick>
-		<hello-world s-go="http://" s-go-route=".*" s-help s-move="right">
-			<description s-see="//*[@id='description']" s-title="description">
-				<bookmaring s-see-position="1" s-see="//*[@id='description']/h3/div[1]/a" s-title="bookmaring"></bookmaring>
+<body style="height:2000px; background-color:#DDD">
+	<hello>
+		<help>
+			<!-- slovastick.move("right") -->
+			<description>
+				<!-- slovastick.show("//*[@id='description']") -->
+				<bookmarking>
+					<!-- slovastick.show("//*[@id='description']/h3/div[1]/a[1]") -->
+				</bookmarking>
 			</description>
-			<getstarted s-see="//*[@id='getstarted']/p" s-title="get started">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
-			</getstarted>
-			<shortcuts s-see="/html/body/ul/li[2]/p" s-title="about shortcuts">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			<start>
+				<!-- slovastick.show("//*[@id='getstarted']/p") -->
+				<item>
+					<!-- slovastick.show("//*[@id='getstarted']/p/../ol/li") -->
+				</item>
+			</start>
+			<shortcuts>
+				<!-- slovastick.show("/html/body/ul/li[2]/p") -->
+				<item>
+					<!-- slovastick.show("/html/body/ul/li[2]/p/../ol/li") -->
+				</item>
 			</shortcuts>
-			<plan s-see="/html/body/ul/li[3]/p" s-title="about plan">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li"></item>
+			<plan>
+				<!-- slovastick.show("/html/body/ul/li[3]/p") -->
+				<item>
+					<!-- slovastick.show("/html/body/ul/li[3]/p/../ol/li") -->
+				</item>
 			</plan>
-			<idea s-see="/html/body/ul/li[4]/p" s-title="about ideas">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
-					<ref  s-see-context=".." s-see="//a"></ref>
+			<references>
+				<!-- slovastick.show("/html/body/ul/li[5]/p") -->
+				<item>
+					<!-- slovastick.show("/html/body/ul/li[5]/p/../ol/li") -->
+					<ref>
+						<!-- slovastick.show("/html/body/ul/li[5]/p/../ol/li//a") -->
+					</ref>
 				</item>
-			</idea>
-			<links s-see="/html/body/ul/li[5]/p" s-title="external links">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
-					<ref s-see-context=".." s-see-position="1" s-see=".//a"></ref>
-				</item>
-			</links>
-			<license s-see="/html/body/ul/li[6]/p" s-title="license">
-				<item s-see-context=".." s-see-position="1" s-see="../ol/li">
-					<ref s-see-context=".." s-see="//a"></ref>
+			</references>
+			<license>
+				<!-- slovastick.show("/html/body/ul/li[6]/p") -->
+				<item>
+					<!-- slovastick.show("/html/body/ul/li[6]/p/../ol/li") -->
+					<ref>
+						<!-- slovastick.show("/html/body/ul/li[6]/p/../ol/li//a") -->
+					</ref>
 				</item>
 			</license>
-			<other s-see="/html/body/ul/li[7]/p" s-title="test on other sites">
-				<ref  s-see-context=".." s-see-position="1" s-see="..//a"></ref>
+			<other>
+				<!-- slovastick.show("/html/body/ul/li[7]/p") -->
+				<text>
+					<!-- slovastick.show("/html/body/ul/li[7]//textarea") -->
+				</text>
 			</other>
-		</hello-world>
-	</slovastick>
-	<!-- end slovastick block -->
+		</help>
+	</hello>
 	<div id="description">
 		<h3>
-			Slovastick - web-based DOM manipulator. It work with special element attributes
-			"s-", who run actions for him, after write XPath in console or pressed keyboard
-			shortcuts. You can automate web-surfing, navigate and edit HTML or XML document.
-			<br/>
-			<br/>
-			<div>
-				That program can work like 
-				<a href="http://xn--80adtibstej.xn--p1ai/build/output/">
+			<div style="text-align:center;">
+				Slovastick - web-based DOM manipulator
+				<br/>
+				<br/>
+				This program works like 
+				<a href="http://194.28.132.189/build/output/">
 					extension 
 				</a>
 				for 
-				<a href="http://xn--80adtibstej.xn--p1ai/build/output/slovastick.crx">
+				<a href="http://194.28.132.189/build/output/slovastick.crx">
 					Chrome
 				</a>
-				, embed to website or one-page calling 
-				<a href="javascript:(function(){var script=document.createElement('script');script.src='http://xn--80adtibstej.xn--p1ai/slovastick.js#'+(new Date().getTime());document.body.appendChild(script);}())">
+
+<!-- 
+				<a href="javascript:(function(){var script=document.createElement('script');script.src='http://194.28.132.189/slovastick.js#'+(new Date().getTime());document.body.appendChild(script);}())">
 					slovastick-bookmark
 				</a>
-				for Chrome and Firefox
-			</div>
-			<br/>
-			<br/>
-			<div style="text-align:center;">
-				<div>
-					WARNING! Currently that program in 
-					<h2>
-						DEEP-DEEP DEVELOPING stage.
-					</h2> 
-					Please note.
-				</div>
+				for Chrome and Filinkox
+ -->
+
+				<br/>
+				<br/>
+				<br/>
+				<br/>
+				WARNING! Currently that program in 
+				<h2>
+					DEEP-DEEP DEVELOPING stage.
+				</h2>
+				Please note.
 				<br/>
 			</div>
-			<br/>
 		</h3>
 	</div>
 	<ul>
@@ -85,27 +105,13 @@
 			</p>
 			<ol>
 				<li>
-					In body of every page sitting element who named "slovastick", 
-					he has its own child elements, for example "vk" for "vk.com" site,
-					you can call them by write XPath or use keyboard shortcuts 
-				</li>
-				<li>
-					For example type in slovastick console command 
-					"go //*[@id='getstarted']/ol/li[2]" 
-					, and you will focused on this text
-				</li>
-				<li>
-					Slovastick can work like extension for Chrome, or like bookmarklet 
-					with manual loading in site, where it possible
-				</li>
-				<li>
-					Web developers can embed slovastick.js script for their sites 
+					It work like extension for Chrome, or embeds on web site
 				</li>
 			</ol>
 		</li>
 		<li>
 			<p>
-				keyboard shortcuts
+				Кeyboard shortcuts
 			</p>
 			<ol>
 				<li>
@@ -131,15 +137,7 @@
 			</p>
 			<ol>
 				<li>
-					Write XML plugins for websites: vkontakte, music.yandex.ru, tutu.ru
-				</li>
-				<li>
-					Make hisory save for comands and XML
-				</li>
-				<li>
-					Maybe, write code for test automation  with 
-					Selenium, javascript-webdriver.
-					Maybe, use Mind Maps for that?
+					develop it
 				</li>
 			</ol>
 		</li>
@@ -165,17 +163,7 @@
 			</p>
 			<ol>
 				<li>
-					Learn XML 
-					<ol>
-						<li>
-							<a href="http://en.wikipedia.org/wiki/XML">
-								http://en.wikipedia.org/wiki/XML
-							</a>
-						</li>
-					</ol>
-				</li>
-				<li>
-					Learn XPath 
+					Learn XPath
 					<ol>
 						<li>
 							<a href="http://www.w3.org/TR/xpath/">
@@ -185,6 +173,16 @@
 						<li>
 							<a href="http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx">
 								http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					Learn XML 
+					<ol>
+						<li>
+							<a href="http://en.wikipedia.org/wiki/XML">
+								http://en.wikipedia.org/wiki/XML
 							</a>
 						</li>
 					</ol>
@@ -217,24 +215,16 @@
 			</p>
 			<ol>
 				<li>
-					If you found
-					<a href="https://github.com/aumberg/slovastick">
-						patty
-					</a>
-					on table, are you asked license agreement to eat him?
+					If you find patty on table, are you ask license agreement to eat him?
 				</li>
 			</ol>
 		</li>
 		<li>
 			<p>
-				Testing on other sites (need slovastick browser's extension)
+				Pass text in area, move on it and listen speech
 			</p>
 			<ol>
-				<li>
-					<a href="http://vk.com">
-						for go to vk.com type command "shortcut site vk go"
-					</a>
-				</li>
+				<textarea>hello</textarea>
 			</ol>
 		</li>
 	</ul>

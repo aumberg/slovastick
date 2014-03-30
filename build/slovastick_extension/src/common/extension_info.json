@@ -1,10 +1,9 @@
 {
-    "name"              :"slovastick",
-    "description"       :"slovastick - web-based DOM manipulator",
-    "version"           :"0.1",
+    "name"              :"Slovastick",
+    "description"       :"Slovastick - web-based DOM manipulator",
+    "version"           :"0.2",
     "creator"           :"Alexander Umberg, slovastick@mail.ru",
-    "homepage_url"      :"http://словастик.рф/",
-    "update_path_url"   :"http://словастик.рф/build/output/",
+    "homepage_url"      :"http://localhost/",
     "default_locale"    :"en",
     "options_page"      :"res/index.html",
     "background_scripts":[
@@ -14,8 +13,8 @@
         "content.js"
     ],
     "browser_button":{
-        "caption"       :"slovastick",
+        "caption"       :"Slovastick",
         "icon"          :"icons/button.png",
-        "tooltipText"   :"slovastick"
+        "tooltipText"   :"Slovastick"
     }
 }

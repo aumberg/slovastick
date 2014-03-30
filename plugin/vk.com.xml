@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<vk s-title="the vkontakte social network" s-go="http://vk.com" s-go-route=".*" s-move="right">
+<vk>
+	<!-- slovastick.go("http://vk.com", ".*").say("the vkontakte social network") -->
+
 	<!-- autoriation. OMG! there maybe CAPTCHA -->
-	<email 	s-shortcut="email"></email>
-	<pass 	s-shortcut="pass"></pass>
-	<enter 	s-see="//e/enter" s-click></enter>
+	<email>
+		<!-- slovastick.show("hello shortcut email") -->
+	</email>
+	<password>
+		<!-- slovastick.show("hello shortcut password") -->
+	</password>
+	<enter>
+		<!-- slovastick.show("hello shortcut enter").click() -->
+	</enter>
+
 	<!-- main page -->
-	<main 	s-see="//*[@id='myprofile']" s-click></main>
+	<main>
+		<!-- slovastick.show("//*[@id='myprofile']").click() -->
+	</main>
+
 	<!-- music -->
-	<music 	s-see="//*[@id='side_bar']/ol/li[5]/a" s-click>
+	<music s-see="//*[@id='side_bar']/ol/li[5]/a" s-click>
+		<!-- is not worked, OLD code... -->
 		<my s-see="//*[@id='album0']" s-click>
 			<song s-see="//*[@id='audios_list']/descendant::*[contains(@class, 'info fl_l')]" s-see-position="1">
 				<play s-see-context=".." s-see="ancestor::*[2]/*[@onclick][1]" s-click></play>

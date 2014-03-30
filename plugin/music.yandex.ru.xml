@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<music-yandex s-title="listen music on yandex!" s-go="http://music.yandex.ru/" s-go-route=".*" s-move="right">
-	<e s-null>
+<music>
+	<!-- is not worked, OLD code... -->
+	<yandex>
 		<sound>
 			<play 		s-shortcut="pleer play"></play>
 			<stop 		s-see="//*[@class='b-jambox__button b-jambox__play b-jambox__playing']" s-click></stop>
@@ -28,38 +29,43 @@
 			<punk 			s-see="//*[@href='#!/top/tracks/genre/punk']" 			s-click  	s-title="punk music" 		></punk>
 			<shanson 		s-see="//*[@href='#!/top/tracks/genre/shanson']" 		s-click  	s-title="shanson music" 	></shanson>
 		</genre>
-	</e>
-
-	<search s-shortcut="search"></search>
-<!-- 
-	
-	<albums s-see="(//*[@class='b-trigger__trigger__i2'])[3]//a"  	s-click s-title="albums" >
-		<album 	s-see-position="1" 	s-see="//*[@class='b-albums__title']/a">
-			<artist s-see-context=".." s-see="." s-click></artist>
-		</album>
-		<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
-	</albums>
-
-	<artists s-see="(//*[@class='b-trigger__trigger__i2'])[4]//a"  	s-click s-title="artists" >
-		<artist 	s-see-position="1" 	s-see="//*[@id='js-content']//*[contains(@class, 'b-artist-group')]/a">
-			<artist s-see-context=".." 	s-see="." s-click></artist>
-		</artist>
-		<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
-	</artists> 
- -->
+		<!-- s-shortcut="search" -->
+		<search2 s-text-javascript="//e/search2" style="display:none;">
+			<!-- сначала исполнитель потом альбом потом песня потом проиграть и остановить -->
+			alert("dd");
+		</search2>
 
 
-	<radio s-see="//*[@id='tag-genre']//*[@class='b-radio__title']" s-title="radio">
-		<play s-shortcut="radio play"></play>
-		<stop s-shortcut="stop"></stop>
-	</radio>
+	<!-- 
+		
+		<albums s-see="(//*[@class='b-trigger__trigger__i2'])[3]//a"  	s-click s-title="albums" >
+			<album 	s-see-position="1" 	s-see="//*[@class='b-albums__title']/a">
+				<artist s-see-context=".." s-see="." s-click></artist>
+			</album>
+			<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
+		</albums>
 
-	<listen-now s-see="//*[@id='js-content']/div[7]/div[2]/h1" s-title="what listen now?">
-		<song s-see-position="1" s-see="//*[@id='js-content']/div[8]/*">
-			<play 	s-see-context=".." 	s-see="//*[@class='b-play__i']" s-click></play>
-			<stop 	s-shortcut="stop"></stop>
-		</song>
-	</listen-now>
+		<artists s-see="(//*[@class='b-trigger__trigger__i2'])[4]//a"  	s-click s-title="artists" >
+			<artist 	s-see-position="1" 	s-see="//*[@id='js-content']//*[contains(@class, 'b-artist-group')]/a">
+				<artist s-see-context=".." 	s-see="." s-click></artist>
+			</artist>
+			<next-page 	s-see="//*[@id='js-content']//a[@class='b-pager__next']" 	s-click s-move="up"></next-page>
+		</artists> 
+	 -->
 
-	<genre s-see-position="1" s-see="//e/genre/*"></genre>
-</music-yandex>
+
+		<radio s-see="//*[@id='tag-genre']//*[@class='b-radio__title']" s-title="radio">
+			<play s-shortcut="radio play"></play>
+			<stop s-shortcut="stop"></stop>
+		</radio>
+
+		<listen-now s-see="//*[@id='js-content']/div[7]/div[2]/h1" s-title="what listen now?">
+			<song s-see-position="1" s-see="//*[@id='js-content']/div[8]/*">
+				<play 	s-see-context=".." 	s-see="//*[@class='b-play__i']" s-click></play>
+				<stop 	s-shortcut="stop"></stop>
+			</song>
+		</listen-now>
+
+		<genre s-see-position="1" s-see="//e/genre/*"></genre>
+	</yandex>
+</music>
