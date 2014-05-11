@@ -33,7 +33,7 @@
 		</element>
 		<program>
 			<interface>
-				<div id="slovastick_panel" title="slovastick console, focusing by shift + control" style="display:none; position:fixed; left:10px; bottom:10px; font-size:20px; z-index:2147483646; padding:5px;  background-color:#DDD; color:black; border: 1px solid black; border-radius: 10px;">
+				<div id="slovastick_panel" title="slovastick console, focusing by shift + control" style="display:none; position:fixed; left:10px; bottom:10px; font-size:16px; z-index:2147483646; padding:5px;  background-color:#DDD; color:black; border: 1px solid black; border-radius: 10px;">
 					<div name="button">
 						<div name="program" style="float:left;"></div>
 						<div style="float:left;">|</div>
@@ -68,7 +68,7 @@
 						<iframe id="slovastick_iframe" width="0px" height="0px">
 						</iframe>
 					</div>
-					<textarea name="console" mode="xpath" style="font-size:20px; height:35px;"></textarea>
+					<textarea name="console" mode="xpath" style="font-size:16px; height:35px;"></textarea>
 				</div>
 				<history title="history block for save program history">
 					<global></global>

@@ -2,115 +2,30 @@
 // slovastick - web-based DOM manipulator
 // manifesto  - http://minifesto.org/
 (function($) {
-	var s = window.slovastick = function(slovastick) {
-		if (!slovastick) {
-			var slova = [];
-
-			s.type.element({is:s.current()}).parents().andSelf().each(function(index, element) {
-				slova.push(element.tagName);
-			});
-
-			slova = slova.join(" ").toLocaleLowerCase();
-
-			var m = slova.match(/\bhello\b.*/i);
-
-			if (m) {
-				slova = m[0];
-			}
-
-			return slova;
-		}
-
-		if ("function" === typeof slovastick) {	
+	var s = window.slovastick = function(param) {
+		if ("function" === typeof param) {	
 			return s.library.loader(function() {
-				a(s);
+				parama(s);
 			});
 		}
 
-		if ("string" !== typeof slovastick) {
-			return null;
+		if ("string" !== typeof param) {
+			return;
 		}
 
-		var words = $.trim(slovastick).split(/[^A-Za-zА-ЯЁа-яё]+/),
-			finded
-			;
-
-		var slova = function() {
-			if (!words.length)
-				return;
-
-			var word = words.shift();
-
-			// s.say(word);
-
-			var finded = s.library.find(s.current() + "/child::" + word);
-
-			if(finded.length) {
-				s.green(word, finded);
-
-				setTimeout(function() {
-					s.go({is:finded});
-					slova();
-				}, 1000);
-
-				return;
-			}
-
-			if(s[word]) {
-				s.yellow(word, s[word]);
-
-				setTimeout(function() {
-					s[word]();
-					slova();
-				}, 1000);
-
-				return;
-			}
-
-			return s.red(word);
-		}
-
-		// for (var i = 0; i < words.length; i++) {
-		// 	if(finded.length) {
-		// 		var fun = function() {
-		// 			s.green(word);
-		// 			s.run(finded);
-
-		// 		setTimeout(words, 1000);
-		// 	}
-
-		// 	else {
-		// 		s.red(word);
-
-		// 		return null;
-		// 	}
-
-			
-		// };
-
-		slova(words);
+		// ...
+		// 
 	};
 	//
-	s.slovastick = s;
-	//
-	s.memory = {
-		current: {
-			element 		: "//*[@id='slovastick']"
-		}
-		,go: {
-			element 		: undefined
-			,position 		: undefined
-			,members		: {}
-		}
-		,loader: {
-			queue  			: []
-			,history 		: []
-		}
-		,audio: {
-			signal: undefined
-			,speech: undefined
-		}
-	}
+	s["memory selected element"] 			= undefined;
+	s["memory page"] 						= undefined;
+	s["memory loader queue"] 				= [];
+	s["memory loader history"] 				= [];
+	s["memory audio signal"] 				= undefined;
+	s["memory audio speech"] 				= undefined;
+	s["memory audio speech listened"] 		= 0;
+	s["memory text pieces for speech"] 		= [];
+
 	//
 	s.option = {
 		program: {
@@ -119,7 +34,7 @@
 			,version 		: "0.2"
 			,status			: "off"
 			,debug : {
-				mode 		: false //false || true || "all"
+				mode 		: true //false || true || "all"
 				,src 		: "http://localhost/"
 			}
 			,src : {
@@ -129,21 +44,7 @@
 			}
 		}
 		,user: {
-			language		: "en"
-			,go: {
-				and: {
-					say: {
-						text: {
-							is: true
-						}
-					}
-					,animate: {
-						color: {
-							is: "green" 
-						}
-					}
-				}
-			}
+			language		: "ru"
 			,sound: {
 				volume		: 75
 			}
@@ -180,157 +81,218 @@
 	};
 	//
 	s.library = {
-		//
-		regexp: {
-			to: {
-				string: function(string) {
-					return string.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+		// ㊢ selenium IDE, recorder-handlers.js, Recorder.prototype.findClickableElement
+		"element clickable": function(e) {
+			e = $(e)[0];
+
+			if (!e.tagName) {
+				return null;
+			}
+
+			var tagName = e.tagName.toLowerCase();
+			var type = e.type;
+
+			if (e.hasAttribute("onclick") || e.hasAttribute("href") || tagName == "button" ||
+				(tagName == "input" && (type == "submit" || type == "button" || type == "image" || type == "radio" || type == "checkbox" || type == "reset"))) {
+					return e;
+			} else {
+				if (e.parentNode != null) {
+					return s.library.element.clickable(e.parentNode);
+				} else {
+					return null;
 				}
 			}
 		}
 		//
-		,node: {
-			// get code from comment-node
-			// can't parse tag "link", because HTML :(
-			parse: function(nodes) {
-				var result = [];
-
-				nodes = $(nodes);
-
-				for (var i = 0; i < nodes.length; i++) {
-					for (var j = 0; j < nodes[i].childNodes.length; j++) {
-						var child = nodes[i].childNodes[j];
-
-						if ((child.nodeType !== child.COMMENT_NODE) || !child.data) 
-							continue;
-
-						if (child.data.match(/\bslovastick\./)) //  /^\s*slovastick\b([\s\S]*)/
-							result.push(child.data);
-					};
-				}
-
-				return result.join(";");
-			}
-		},
+		,"regexp to string": function(string) {
+			return string.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+		}
 		//
-		audio: {
-			play: {
-				signal: function(strSignalName) {
-					var audio = s.memory.audio.signal;
+		,"audio play signal": function(strSignalName) {
+			var audio = s["memory audio signal"];
 
-					if (!s.option.user.sound.volume || !s.option.browser.audio.extension || !audio)
-						return;
-
-					audio.volume = s.option.user.sound.volume / 100;
-					audio.pause();
-					audio.src = s.option.program.src.sound + strSignalName + s.option.browser.audio.extension;
-					audio.play();
-				}
-				,speech: function(text, lang) {
-					var audio = s.memory.audio.speech;
-
-					if (!s.option.user.sound.volume || !audio) {
-						return;
-					}
-
-					text = $.trim(text.replace(/\s+/g, " "));
-					var masText = s.library.text.pieces({text:{is:text}, range:{is:90}});
-
-					var listened = 1; 
-
-					function play() {
-						listened++;
-
-						text = masText.shift();
-
-						if (!text) {
-							return;
-						}
-
-						text = encodeURIComponent(text);
-						var url = "";
-
-						// google
-						if (".mp3" === s.option.browser.audio.extension) {
-							url = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + s.option.user.language;
-						}
-						// not google
-						else if (".ogg" === s.option.browser.audio.extension) {
-							var local = {
-								"ru": "&LOCALE=ru&VOICE=voxforge-ru-nsh",
-								"en": "&LOCALE=en_US&VOICE=cmu-slt-hsmm"
-							};
-							url = "http://mary.dfki.de:59125/process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=" + text + local[s.option.user.language] + "&AUDIO=WAVE_FILE";
-						}		
-
-						audio.volume = s.option.user.sound.volume / 100;
-						audio.pause();
-						audio.src = url;
-						audio.play();
-					}
-
-					clearTimeout($(audio).data("timeout"));
-
-					$(audio)
-						.off()
-						.on("timeupdate", function(){
-							if (audio.ended) {
-								if (listened > 10) {
-									listened = 1;
-
-									clearTimeout($(audio).data("timeout"));
-									s.yellow("wait");
-									$(audio).data("timeout", setTimeout(play, 5000));
-								}
-								else {
-									play();	
-								}
-							}
-						})
-						.data("timeout", setTimeout(play, 1000))
-
-					audio.pause();
-				}
+			if (!s.option.user.sound.volume || !s.option.browser.audio.extension || !audio) {
+				return;
 			}
+
+			audio.volume = s.option.user.sound.volume / 100;
+			audio.pause();
+			audio.src = s.option.program.src.sound + strSignalName + s.option.browser.audio.extension;
+			audio.play();
+		}
+		,"audio pause speech": function() {
+			s["memory audio speech"].pause();
+		}
+		,"audio add and play speech": function(text) {
+			s["memory text pieces for speech"].push(text);
+
+			var audio = s["memory audio speech"];
+
+			console.log(audio.paused || audio.ended);
+
+			if (audio.paused || audio.ended) {
+				s.library["audio play speech"]();
+			}
+		}
+		,"audio play speech": function(text, lang) {
+			var audio = s["memory audio speech"];
+			var text = (text ? [text] : s["memory text pieces for speech"]).shift();
+			text = $.trim(text.replace(/\s+/g, " "));
+			var listened = s["memory audio speech listened"];
+			var lang = (lang || s.option.user.language);
+
+			var textPieces = s.library["text pieces"]({"text":text, "range":90});
+			s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
+
+			text = encodeURIComponent(s["memory text pieces for speech"].shift());
+
+			if (!s.option.user.sound.volume || !audio || !text || !(audio.paused || audio.ended)) {
+				return;
+			}
+
+			if (listened > 10) {
+				setTimeout(s.library["audio play speech"], 5000)
+			}
+
+			listened++;
+			s.green("audio play speech", text);
+
+
+			var url = "";
+
+			// google
+			if (".mp3" === s.option.browser.audio.extension) {
+				url = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + lang;
+			}
+			// not google
+			else if (".ogg" === s.option.browser.audio.extension) {
+				var local = {
+					"ru": "&LOCALE=ru&VOICE=voxforge-ru-nsh",
+					"en": "&LOCALE=en_US&VOICE=cmu-slt-hsmm"
+				};
+				url = "http://mary.dfki.de:59125/process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=" + text + local[lang] + "&AUDIO=WAVE_FILE";
+			}		
+
+			audio.volume = s.option.user.sound.volume / 100;
+			audio.pause();
+			audio.src = url;
+			audio.play();
 		}
 		//code dependencies loader
-		,loader: function(load) {
+		,"loader": function(load) {
 			if (load) {
 				if ("function" === typeof a) {
-					s.memory.loader.queue 	= s.memory.loader.queue.concat([a]);
+					s["memory loader queue"] 	= s["memory loader queue"].concat([a]);
 				}
 				else {
-					load.before 			= (load.before || []);
-					load.after 				= (load.after  || []);
-					s.memory.loader.queue 	= load.before.concat(s.memory.loader.queue);
-					s.memory.loader.queue 	= s.memory.loader.queue.concat(load.after);
+					load.before 				= (load.before || []);
+					load.after 					= (load.after  || []);
+					s["memory loader queue"] 	= load.before.concat(s["memory loader queue"]);
+					s["memory loader queue"] 	= s["memory loader queue"].concat(load.after);
 				}
 
-				if (s.memory.loader.started) {
+				if (s["memory loader started"]) {
 					return;
 				}
 			}
 
-			s.memory.loader.started = true;
+			s["memory loader started"] = true;
 			
-			if (s.memory.loader.queue.length) {
+			if (s["memory loader queue"].length) {
 				var call = {};
 
-				s.memory.loader.history.push(call);
-				call.function = s.memory.loader.queue.shift();
+				s["memory loader history"].push(call);
+				call.function = s["memory loader queue"].shift();
 
 				try {
 					return call.result = call.function();
 				}
 				catch(e) {
-					s.red(e, "on call last function", call.function.toString(), s.memory.loader.history);
+					s.red(e, "on call last function", call.function.toString(), s["memory loader history"]);
 				}
 			}
 
-			return s.memory.loader.started = null;
+			return s["memory loader started"] = null;
+		}
+		,"speech recognition" : function() {
+			// http://stiltsoft.com/blog/2013/05/google-chrome-how-to-use-the-web-speech-api/
+			if (!('webkitSpeechRecognition' in window)) {
+				return;
+			}
+
+			s.green("speech recognition");
+
+			if (s["memory recognition"]) {
+				s["memory recognition"].stop();
+				var recognition = s["memory recognition"];
+			}
+			else {
+				var recognition = s["memory recognition"] = new webkitSpeechRecognition();
+			}
+
+			var interimResult;
+
+			// var timeout = setTimeout(function() {
+			// 	recognition.stop();
+			// 	callback();
+			// 	s.green("e");
+			// 	s.yellow(interimResult)
+			// }, 3000);
+
+			recognition.lang = s.option.user.language;
+			recognition.continuous = true;
+			recognition.interimResults = true;
+
+			recognition.onerror = function(event) {
+				s.red("recognition error - " + event.error);
+				// recognition.stop();
+				// callback();
+			};
+
+
+			recognition.onend = function() {
+				var e = $(s["memory last input element"]);
+
+				if (interimResult) {
+					s.red("end - " + interimResult);
+					e.val(e.val() + " " + interimResult).keyup();
+				}
+			};
+
+			recognition.onresult = function(event) {
+				// var pos = s.option.console.getCursorPosition() - interimResult.length;
+				// s.option.console.val(s.option.console.val().replace(interimResult, ''));
+				interimResult = "";
+				// s.option.console.setSelectionRange(pos, pos);
+				// s.library.selectRange(s.option.console, interimResult.length)
+
+				for (var i = event.resultIndex; i < event.results.length; ++i) {
+					interimResult += event.results[i][0].transcript;
+
+					if (event.results[i].isFinal) {
+						// callback();
+						// clearTimeout(timeout);
+						// recognition.stop();
+						// s.red("ololo?", interimResult);
+						recognition.stop();
+						
+
+						// return e.val(e.val() + " " + interimResult).keyup();
+						// event.results[i][0].transcript);
+					}
+				}
+
+				s.yellow(interimResult, "eee");
+
+				// s["memory last input element"].val(interimResult.slice(1)).keyup();
+			};
+
+			recognition.start();
+
+			return recognition;
 		}
 		// button events checker
-		,button: (function() {
+		,"button": (function() {
 			var b = {
 				name: {
 					"enter"		: 13
@@ -349,8 +311,9 @@
 					result = 0;
 
 					$.each(b.name, function(buttonName) {
-						if (b[buttonName])
+						if (b[buttonName]) {
 							result++;
+						}
 					})
 
 					return result;
@@ -380,10 +343,13 @@
 
 					clearTimeout(b[buttonName]);
 					b.last.keydown 			= buttonName;
-					b[b.name[buttonName]] 	= b[buttonName] = setTimeout(function() {
-						delete b[b.name[buttonName]];
-						delete b[buttonName];
-					}, 5000);
+
+					b[b.name[buttonName]] 	= b[buttonName] = true;
+
+					// b[b.name[buttonName]] 	= b[buttonName] = setTimeout(function() {
+					// 	delete b[b.name[buttonName]];
+					// 	delete b[buttonName];
+					// }, 5000);
 
 					return true;
 				}
@@ -420,27 +386,27 @@
 				// arguments: (["control", "shift"]) 	- control AND shift
 				,"has": function() {
 					for (var i = 0; i < arguments.length; i++) {
-						var masHas = [],
-							isOk = true;
+						var masHas = [];
 
-						if (!$.isArray(arguments[i]))
+						if (!$.isArray(arguments[i])) {
 							s.red("bad arg for 'has' function", arguments[i]);
+						}
 
 						for (var j = 0; j < arguments[i].length; j++) {
 							var name = arguments[i][j];
 
 							if (!b[name]) {
-								isOk = false;
-
-								break;
+								return false;
 							}
 
-							if (-1 === $.inArray(name, masHas))
+							if (-1 === $.inArray(name, masHas)) {
 								masHas.push(name);
+							}
 						}
 
-						if (isOk && (masHas.length === b.count()))
+						if (masHas.length === b.count()) {
 							return true;
+						}
 					}
 
 					return false;
@@ -450,29 +416,22 @@
 			return b;
 		}())
 		// search element by xpath or cssPath selector
-		,find: function(find) {
-			find = $.extend(true, {
-				is: undefined
-				,context: $(document)
-			}, find);
-
-			var result;
-
-			find.context = s.type.element({is: find.context});
+		,"find": function(path_or_element, context) {
+			context = ("string" === typeof context) ? s.library.find(context) : $(document);
 
 			// find element by path
-			if ("string" === typeof find.is) {
+			if ("string" === typeof path_or_element) {
 				result = $();
 
 				try {
-					return $(find.is, find.context);
+					return $(path_or_element, context);
 				}
 				catch (e) {}
 
 				// if can't css try xpath
-				for (var i = 0; i < find.context.length; i++) {
+				for (var i = 0; i < context.length; i++) {
 					try {
-						xpath_result = window.document.evaluate(find.is, find.context[i], null, 0, null);
+						xpath_result = window.document.evaluate(path_or_element, context[i], null, 0, null);
 					}
 					catch (e) {
 						return null;
@@ -484,9 +443,9 @@
 				}
 
 				if ("all" === s.option.program.debug.mode) {
-					var msg = ["search " + find.is];
+					var msg = ["search " + path_or_element];
 
-					msg = msg.concat(["from contexts", find.context]);
+					msg = msg.concat(["from contexts", context]);
 
 					if (result.length)
 						msg = msg.concat(["and found", result]);
@@ -496,17 +455,15 @@
 					s.yellow.apply(this, msg);
 				}
 
-				s.green("result, " , result)
-
 				return result;
 			}
-			else if ("object" === typeof find.is) {
+			else if ("object" === typeof path_or_element) {
 				result = {
 					"css"	: ""
 					,"xpath": ""
 				};
 
-				$(find.is).each(function(index, element) {
+				$(path_or_element).each(function(index, element) {
 					var css = "", xpath = "";
 
 					for (element; element && (1 === element.nodeType); element = element.parentNode) {
@@ -567,55 +524,50 @@
 			return null;
 		}
 		//slice string for parts. It need for service "google translate"
-		,text: {
-			self: function(element) {
-				element 	= s.type.element({is: element});
+		,"text self": function(element) {
+				element 	= s.type.element(element);
 
 				var clone 	= element.clone();
 				clone.children().remove();
 				
-				var result 	= element.val() + clone.text();
+				var result 	= element.text() || clone.val();
 				clone.remove();
 
 				return result;
 			}
-			,pieces: function(pieces) {
-				pieces = $.extend(true, {
-					text: {
-						is 		: ""
-					}
-					,range: {
-						is 		: 1
-					}
-				}, pieces);
+		,"text pieces": function(param) {
+				param = $.extend(true, {
+					text: ""
+					,range: 1
+				}, param);
 
-				// if("number" !== typeof pieces.range.is) {
+				// if("number" !== typeof param.range) {
 				// 	return null;
 				// }
 
 				var result = [];
 
 				(function loop() {
-					if(!pieces.text.is.length)
+					if(!param.text.length)
 						return;
 
-					var part = pieces.text.is.slice(0, pieces.range.is);
+					var part = param.text.slice(0, param.range);
 
-					if(pieces.range.is > part.length)
+					if(param.range > part.length)
 						return result.push(part);
 
 					var search = /[\.\?\!][^\.\?\!]*$/.exec(part),
-						nextStartIndex = pieces.range.is;
+						nextStartIndex = param.range;
 
 					if(search) {
-						nextStartIndex = pieces.range.is - (search[0].length - 1);
+						nextStartIndex = param.range - (search[0].length - 1);
 					}
 					else if(-1 !== part.lastIndexOf(" ")) {
 						nextStartIndex = part.lastIndexOf(" ") + 1;
 					}
 
-					result.push(pieces.text.is.slice(0, nextStartIndex));
-					pieces.text.is = pieces.text.is.slice(nextStartIndex);
+					result.push(param.text.slice(0, nextStartIndex));
+					param.text = param.text.slice(nextStartIndex);
 			
 					loop();
 				}())
@@ -623,23 +575,21 @@
 				return result;
 			}
 			//
-			,select: {
-				range: function(element, start, end) {
-					element = $(element).get(0);
+		,"set text selection range": function(element, start, end) {
+			element = $(element).get(0);
 
-					if (element.setSelectionRange) {
-						element.setSelectionRange(start, end);
-					} else if (element.createTextRange) {
-						var range = element.createTextRange();
-						range.collapse(true);
-						range.moveStart('character', start);
-						range.moveEnd('character', end);
-						range.select();
-					}
-				}
+			if (element.setSelectionRange) {
+				element.setSelectionRange(start, end);
+			} else if (element.createTextRange) {
+				var range = element.createTextRange();
+				range.collapse(true);
+				range.moveStart('character', start);
+				range.moveEnd('character', end);
+				range.select();
 			}
 		}
 	};
+	//
 	//
 	// 	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	//
@@ -688,90 +638,8 @@
 				// words["after_current_element"] = function(ele) {};
 
 				if ("command" === mode) {
-					// http://stiltsoft.com/blog/2013/05/google-chrome-how-to-use-the-web-speech-api/
-					if ('webkitSpeechRecognition' in window) {
-						function stop() {
-							recognition.stop();
-							delete recognition;
-						}
-
-						if (recognition)
-							stop();
-
-						var recognition = new webkitSpeechRecognition()
-							,interimResult
-							;
-
-						// var timeout = setTimeout(function() {
-						// 	clearTimeout(timeout);
-						// 	stop();
-						// }, 3000);
-
-						recognition.lang = s.option.user.language;
-						recognition.continuous = true;
-						recognition.interimResults = true;
-
-						recognition.onerror = function(event) {
-							s.red("recognition - " + event.error);
-							stop();
-						};
-
-						recognition.onresult = function(event) {
-							// var pos = s.option.console.getCursorPosition() - interimResult.length;
-
-							// s.option.console.val(s.option.console.val().replace(interimResult, ''));
-							interimResult = "";
-							// s.option.console.setSelectionRange(pos, pos);
-
-							// s.library.selectRange(s.option.console, interimResult.length)
-
-							for (var i = event.resultIndex; i < event.results.length; ++i) {
-								var str = event.results[i][0].transcript;
-
-								if (event.results[i].isFinal) {
-									// if (str !== s.option.console.val())
-										return s.option.console.val(str.slice(1) + "\r\n").keyup();
 
 
-									// s.option.console.val(s.option.console.val() + " " + event.results[i][0].transcript);
-									// s.current().key("run", str).run();
-								}
-								else {
-									// if (str !== s.option.console.val())
-
-									interimResult += str;
-								}
-							}
-
-							s.option.console.val(interimResult.slice(1)).keyup();
-						};
-
-						recognition.start();
-
-						// $(this).one("keypress.slovastick", stop);
-					}
-
-					// run command
-					s.option.console
-						.on("keyup.slovastick", function(event) {
-							if (13 !== event.which)
-								return;
-
-							var val = s.option.console.val();
-
-							// is XML ?
-							if (/^\s*</.test(val)) {
-								//keepScripts = true
-								return s.plugin($($.parseHTML(val, true))).log("is xml");
-								// 
-							}
-							//is command
-							s(val);
-
-							s.option.console.val("");
-						})
-				}
-				else if ("info" === mode) {
 					// words["after_current_element"] = function(ele) {
 					// 	var clone 	= $(ele).clone()
 					// 		,organs = clone.children().remove()
@@ -835,6 +703,45 @@
 					s.option.panel.css({"left":"auto", "right":"10px"});
 			});
 
+		var elements = s.library["find"](s.console()).each(function() {
+			var element = $(this);
+			var text = $.trim(s.library["text self"](element));
+
+			element.data("slovatick", text);
+		});
+
+		var x = function() {
+			var elements = s.library["find"](s.console());
+
+			elements.each(function() {
+				var element = $(this);
+				var text = $.trim(s.library["text self"](element));
+
+				if (text && (element.data("slovatick") !== text)) {
+					s.library["audio add and play speech"](text);
+					element.data("slovatick", text);
+				}
+			});
+
+			setTimeout(x, 5000);
+		}
+
+		x();
+
+		$("*")
+			.on("focus.slovastick_memory_element, mouseenter.slovastick_memory_element", function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				s["memory last element"] = event.target;
+
+				// console.log(event.target.tagName)
+
+				if (-1 !== $.inArray(event.target.tagName, ["INPUT", "TEXTAREA"])) {
+					s["memory last input element"] = event.target;
+				}
+			})
+
 		$(window)
 			.on("resize.slovastick", function() {
 				s.option.console.css("max-width", 	($(window).width()  - 40) + "px");
@@ -844,75 +751,129 @@
 			.on("keydown.slovastick", function(event) {
 				var result = s.library.button.keydown(event);
 
-				if (!result)
+				if (!result) {
 					return;
-				
-				if (s.library.button.has(["up", "down"])) {
-					if (s.option.console.is(":focus"))
-						s.option.console.blur();
-					else
-						s.option.console.focus();
 				}
-				else if (s.library.button.has(["up"], ["down"], ["left"], ["right"])) {
-					if (s.option.console.is(":focus")) {
-						if (s.library.button.has(["up"], ["down"]))
-							event.preventDefault();
+
+				// if (event.which === 16) {
+				// }
+
+
+				if (s.library.button.has(["shift"])) {
+					s.library["speech recognition"]()
+				}
+					// $("#slovastick_panel [name=mode]").focus();
+
+					// s.green("control", ele, ele.offset().top + " " + ele.offset().left)
+
+					// $(window).one("click", function(event) {
+						// s.red(event.target)
+						// s.type.element(event.target)[0].tagName
+						
+					// });
+
+
+
+
+						// if (v.length) {
+						// 	var offset 			= v.offset();
+						// 	var scrollTopValue 	= parseInt(offset ? offset.top : 0) - Math.round($(window).height()/2) + "px";
+
+						// 	$("html, body").stop(true).animate({"scrollTop": scrollTopValue}, {"duration": 300, "easing": "swing"});
+						// }
+
+
+						// // !!! don't animate internal blocks !!!
+						// element.each(function(index, element) {
+						// 	if (-1 === $.inArray(element.tagName, ["IMG", "OBJECT"])) {
+						// 		var oldBgcolor = $(element).css("background-color");
+						// 		$(element).css("background-color", "green");
+
+						// 		setTimeout(function () {
+						// 			$(element).css("background-color", oldBgcolor);
+						// 		}, 400)
+
+						// 		return;
+						// 	}
+						// })
+
+		
+
+					// var found = s.library.find()
+
+
+					// s.option.console.val(
+					// 		  "-------text-------\r\n" 		+ text
+					// 		+ "\r\n-------xpath------\r\n"	+ found["xpath"] 
+					// 		+ "\r\n-------css--------\r\n"  + found["css"]);
+					// }
+
+					// s.memory.ele["after_current"]();
+
+					// setTimeout(function() {
+					// 	var allInBody = $("*", "body").not($("*", s.option.panel).andSelf());
+
+					// 	allInBody.on("mouseover.slovastick-mouseover", function(event) {
+					// 		event.stopPropagation();
+					// 		s.library.ele(this).key("show-no-scroll", "")["show"]()["current"]();
+					// 	});
+
+					// 	$(window)
+					// 		.on("keydown.slovastick-mouseover keyup.slovastick-mouseover mousedown.slovastick-mouseover click.slovastick-mouseover", function() {
+					// 			$(this).add(allInBody)
+					// 				.off(".slovastick-mouseover");
+					// 		});
+					// }, 500);
+				
+			})
+			.on("keyup.slovastick", function(event) {
+				if (s.library.button.has(["shift"])) {
+					if ("" + window.getSelection()) {
+						s.library["audio play speech"]("" + window.getSelection());
 
 						return;
 					}
-					$(window)
-						.on("keyup.slovastick-move", function(event) {
-							s.move(s.library.button.last.keydown);
+
+					element 	= $(s["memory last element"]);
+					var offset 	= element.offset();
+
+					s.console(s.library["find"](s["memory last element"])["xpath"]);
+
+					var text = $.trim(s.library["text self"](element));
+					s.library["audio play speech"](text);
+					element.data("slovatick", text);				
+
+					$("<div class='slovastick' title='slovastick temporary block'>")
+						.css({
+							"position"	: "absolute"
+							,"width"	: element.css("width")
+							,"height"	: element.css("height")
+							,"left"		: offset.left
+							,"top"		: offset.top
+							,"z-index"	: "2147483647"
+							,"opacity"  : 0.8
+							,"background-color": "green"
 						})
-						.on("keydown.slovastick-move keyup.slovastick-move", function(event) {
-							$(this)
-								.off(".slovastick-move");
+						.prependTo($("body"))
+						.delay().animate({"opacity": 0}, 1000, function() {
+							$(this).remove();
 						});
 				}
-				else if (s.library.button.has(["shift", "control"])) {
-					var timeout = setTimeout(function() {
-						if (s.option.console.is(":focus"))
-							s.option.console.blur()
-						else
-							s.option.console.focus();
-					}, 1000);
 
-					$(window)
-						.on("keydown.slovastick-mouseover keyup.slovastick-mouseover", function() {
-							clearTimeout(timeout);
-						});
-				}
-				else if (s.library.button.has(["shift"], ["control"])) {
-					var timeout = setTimeout(function () {
-						timeout = false;
-					}, 500);
-
-					var isShift = s.library.button.shift;
-
-					$(window)
-						.on("keyup.slovastick-move", function(event) {
-							if (timeout)
-								var m = isShift ? "up" 		: "down";
-							else
-								var m = isShift ? "left" 	: "right";
-
-							s.move(m);
-						})
-						.on("keydown.slovastick-move keyup.slovastick-move", function(event) {
-							$(this)
-								.off(".slovastick-move");
-
-							clearTimeout(timeout);
-						});
-				}
+				s.library.button.keyup(event);
 			})
-			.on("keyup.slovastick", s.library.button.keyup);
+
+			// $(window).on("hashchange", function(event) {
+			// })
+			// $(window).on("focus", function(event) {
+			// })
+			// $(window).on("blur", function(event) {
+			// })
+			// $(document).on("mouseover", "*:visible", function(){
+			// });
 
 		s.option.program.status = "on";
-
 		s.yellow("I there! Hello :>");
-
-		s.console(slovastick());
 	};
 	//
 	s.call = function(string) {
@@ -941,7 +902,7 @@
 		if (s.option.program.debug.mode && window.console && "function" === typeof window.console.log)
 			window.console.log("WORDS OK: ", arguments);
 
-		s.library.audio.play.signal("green");
+		s.library["audio play signal"]("green");
 
 		return s;
 	};
@@ -950,7 +911,7 @@
 		if (s.option.program.debug.mode && window.console && "function" === typeof window.console.error)
 			window.console.error("WORDS LOG: ", arguments);
 
-		s.library.audio.play.signal("yellow");
+		s.library["audio play signal"]("yellow");
 
 		return s;
 	};
@@ -959,16 +920,9 @@
 		if (s.option.program.debug.mode && window.console && "function" === typeof window.console.error)
 			window.console.error("WORDS ERROR: ", arguments);
 
-		s.library.audio.play.signal("red");
+		s.library["audio play signal"]("red");
 
 		return null;
-	};
-	//
-	s.say = function(string) {
-		s.green("say", string)
-		s.library.audio.play.speech(string, s.option.user.language);
-
-		return s;
 	};
 	// go to url
 	s.url = function(url) {
@@ -985,301 +939,15 @@
 			window.document.location.href = url.is;
 		}
 	};
-	// go to element
-	s.go = function(go) {
-		go = $.extend(true, {
-			is: s.memory.go.xpath
-			,context: undefined
-			,position: {
-				is: (s.memory.go.members[go.is] || 1)
-				,change: 0
-			}
-			,current: {
-				is: true
-			}
-			,and: {
-				say: {
-					text: {
-						is: s.option.user.go.and.say.text.is
-					}
-				}
-				,animate: {
-					is: true
-					,scroll: {
-						is: true
-					}
-					,color: {
-						is: s.option.user.go.and.animate.color.is
-					}
-				}
-			}
-		}, go);
-
-		go.is = s.type.xpath(go);
-
-		if (!go.is) {
-			return null;
-		}
-
-		var left_xpath = [];
-		var right_xpath = go.is.split("/");
-		var members = s.memory.go.members;
-
-		if ("." !== go.is[0]) {
-			while (right_xpath.length) {
-				left_xpath.push(right_xpath.shift());
-				var l = left_xpath.join("/")
-
-				// s.green("!!!ok", l, right_xpath.join("/"))
-
-				if (right_xpath.length && members[l]) { //right_xpath.length && 
-
-					l = "(" + l + ")[" + members[l] + "]";
-					left_xpath = l.split("/")
-					go.is = right_xpath.join("/");
-
-					if ("/" === go.is[0])
-						go.is = "./" + go.is;
-
-					go.is = l + "/" + go.is;
-
-					// s.green("!!!!!!!!!!!!", right_xpath, a)
-				}
-			}
-		}
-		// s.green("!!!final", left_xpath.join("/"), a)
-
-		
-
-
-		// var left_xpath = a;
-		// var right_xpath = "";
-
-		// if ("/" === a[0]) {
-		// 	while (-1 !== (i = left_xpath.lastIndexOf("/"))) {
-		// 		// s.yellow(right_xpath, left_xpath)
-
-		// 		// s.green("while", right_xpath)
-
-		// 		if (right_xpath && "number" === typeof s.memory.go.members[left_xpath]) {
-		// 			right_xpath = "." + right_xpath;
-		// 			a.context = s.type.element(left_xpath).eq(s.memory.go.members[left_xpath] - 1);
-
-		// 			// s.green("!!!!!!!!!!!!", right_xpath)
-
-		// 			break;
-		// 		}
-
-		// 		// var i = left_xpath.lastIndexOf("/");
-
-		// 		// if (-1 === i) 
-		// 		// 	break;
-
-		// 		right_xpath = left_xpath.slice(i) + right_xpath;
-		// 		left_xpath 	= left_xpath.slice(0, i);
-		// 	}
-		// }
-
-		// s.green("MEMO", s.memory.go.members[a.element.is])
-
-		var elements = s.type.element({is:go.is});
-
-		// s.yellow(a, "a", a.context);
-
-		if (!elements.length) {
-			return null;
-		}
-
-		s.memory.go.xpath = go.is;
-
-		if (go.position.change && !go.position.is) {
-			return null;
-		}
-		else if (go.position.is) {
-			if (!(go.position.is + go.position.change)) {
-				return null;
-			}
-
-			go.position.is += go.position.change;
-
-			if (!elements.eq(go.position.is - 1).length) {
-				if (1 >= go.position.is) {
-					s.memory.go.members[go.is] = 1;
-				}
-				else if (go.position.is > elements.length) {
-					s.memory.go.members[go.is] = elements.length;
-				}
-
-				return null;	
-			}
-
-			s.memory.go.members[go.is] = go.position.is;
-			elements = elements.eq(go.position.is - 1);
-		}
-
-
-		// 
-		if (go.and.animate.is) {
-			var v = elements.eq(0).focus();
-
-			if (go.and.animate.scroll.is) {
-				if (v.length) {
-					var offset 			= v.offset();
-					var scrollTopValue 	= parseInt(offset ? offset.top : 0) - Math.round($(window).height()/2) + "px";
-
-					$("html, body").stop(true).animate({"scrollTop": scrollTopValue}, {"duration": 300, "easing": "swing"});
-				}
-			}
-
-			elements.filter(':visible').each(function(index, element) {
-				element 	= $(element);
-				var offset 	= element.offset();
-
-				$("<div title='slovastick temporary element'>")
-					.css({
-						"position"	: "absolute"
-						,"width"	: element.css("width")
-						,"height"	: element.css("height")
-						,"left"		: offset.left
-						,"top"		: offset.top
-						,"z-index"	: "2147483647"
-						,"background-color": go.and.animate.color.is
-					})
-					.on("mouseover", function(event) {
-						event.preventDefault();
-						event.stopPropagation();
-					})
-					.prependTo($("#slovastick"))
-					.delay().animate({"opacity": 0}, 400, function() {
-						$(this).remove();
-					});
-
-				// // !!! don't animate internal blocks !!!
-				// element.each(function(index, element) {
-				// 	if (-1 === $.inArray(element.tagName, ["IMG", "OBJECT"])) {
-				// 		var oldBgcolor = $(element).css("background-color");
-				// 		$(element).css("background-color", "green");
-
-				// 		setTimeout(function () {
-				// 			$(element).css("background-color", oldBgcolor);
-				// 		}, 400)
-
-				// 		return;
-				// 	}
-				// })
-			});
-		}
-
-		// code parse
-		elements.each(function(index, element) {
-			var c = s.current();
-
-			if (go.current.is) {
-				s.current(element).focus(element);
-			}
-
-			var code = s.library.node.parse(element);
-
-			// if ("all" === s.option.program.debug.mode)
-				// s.green("ON element", elements[i], "EVAL code", code)
-
-			// s.green();
-
-
-			if (go.and.say.text) {
-				var te = s.library.text.self(element);
-
-				if (te) {
-					s.say(element.tagName + ". " + te);
-				}
-				else {
-					s.say(s.type.element({is: s.current()})[0].tagName + ". " + s.library.text.self(c));
-				}
-			}
-
-			if (code) {
-				try {
-					eval("result = " + code);
-
-					if (null !== result) {
-						// if (go.and.say.text) {
-
-						// 	elements.each(function(index, element) {
-						// 		console.log("TTTTTTTTTTTTTTTTTTTTTTTT", elements)
-						// 		s.say(element.tagName + ". " + s.library.text.self(element));
-						// 	})
-						// }
-
-						return;
-					}
-				}
-				catch(e) {
-					s.red("some error", e);
-
-					if (go.current.is) {
-						s.current(c).focus(element);
-					}					
-				}
-			}
-		})
-
-		return s;
-	};
-	// move to sibling element
-	s.move = function(direction) {
-		if ("object" === typeof direction)
-			direction = direction.toString();
-
-		var direct 	= {
-			up 		: "/preceding-sibling::*"
-			,down 	: "/following-sibling::*"
-			,left 	: "/ancestor::*"
-			,right 	: "/child::*"
-		};
-
-		// show on other position
-		if (("up" === direction) && s.go({is: s.memory.go.xpath, position:{change: -1}})) {
-			return s.green("I move up");
-		}
-		else if (("down" === direction) && s.go({is: s.memory.go.xpath, position:{change: 1}})) {
-			return s.green("I move down");
-		}
-		else if (direct[direction]) {
-			var masSiblings = s.library.find({is:s.current() + direct[direction]});
-
-			if (-1 < $.inArray(s.option.browser.name, ["mozilla", "msie", "chrome"]) && 
-				-1 < $.inArray(direction, ["left", "up"])) {
-					masSiblings.reverse();
-			}
-
-			for (var i = 0; i < masSiblings.length; i++) {
-				if (null !== s.go({is:masSiblings[i]})) {
-					return s;
-				}
-			}
-		}
-
-		return s.go({and:{animate:{color: "red"}}}).red("I can't move to " + direction + ", i stop there...");
-	};
 	//
-	s.focus = function(a) {
-		a = s.type.element(a).focus();
-
-		if (!a.length) {	
-			return $(":focus");
-		}
-
-		return s;
-	}
-	//
-	s.console = function(console) {
+	s.console = function(text) {
 		if (!s.option.console)
 			return;
 
-		if (!console)
+		if (!text)
 			return s.option.console.val();
 
-		s.option.console.val(console);
+		s.option.console.val(text);
 
 		return s;
 	}
@@ -1291,8 +959,11 @@
 			,callback: function() {}
 		}, plugin);
 
-		if (!plugin.url)
+		if (!plugin.url) {
 			return s.red("bad url for plugin", plugin.url);
+		}
+
+		s.yellow(plugin.url)
 
 		$.ajax(plugin.url, {
 			dataType: 'text'
@@ -1301,13 +972,14 @@
 			,success: function(data) {
 				try {
 					$($.parseHTML(data, true)).each(function(index, element) {
-						if (!element.tagName || "#" === element.nodeName[0])
+						if (!element.tagName || "#" === element.nodeName[0]) {
 							return;
+						}
 
-						s.green(plugin.prepend, s.library.find({is: plugin.prepend}))
+						s.green(plugin.prepend, s.library.find(plugin.prepend))
 
 						// .children(element.tagName).remove();
-						s.library.find({is: plugin.prepend}).prepend(element);
+						s.library.find(plugin.prepend).prepend(element);
 
 						// s.run(element);
 					});
@@ -1327,91 +999,29 @@
 	}
 	//
 	s.type = {
-		element: function(element) {
-			element = $.extend(true, {
-				is: $()
-				// ,"xpath": true
-				// ,context: window.document
-			}, element);
-
-			var result = element.is;
-
-			if ("object" !== typeof result) {
-				result = s.library.find(element);
+		element: function(path, context) {
+			if ("string" === typeof path) {
+				path = s.library.find(path, context);
 			}
 
-			return $(result);
+			return $(path);
 		}
-		,path: function(path) {
-			path = $.extend(true, {
-				is: ""
-				,"xpath": true
-				// ,context: window.document
-			}, path);
-
-			var result = path.is;
-
-			if ("string" !== typeof result) {
-				result = s.library.find(path);
-
-				if (result) {
-					result = path.xpath ? result.xpath : result.css;
-				}
-			}
-
-			return result;
-		}
-		,xpath: function(xpath) {
-			xpath = $.extend(true, {
-				// is: ""
-				// ,"xpath": true
-				// ,context: window.document
-			}, xpath);
-
-			return s.type.path(xpath);
+		,xpath: function(element) {
+			return s.library.find(element)["xpath"];
 		},
-		css: function(css) {
-			css = $.extend(true, css, {
-				"xpath": false
-				// ,is: ""
-				// ,context: window.document
-			});
-
-			return s.type.path(css);
+		css: function(element) {
+			return s.library.find(element)["css"];
 		}
-	}
-	//
-	s.current = function(element) {
-		if (!element)
-			return s.memory.current.element;
-
-		if ("string" !== typeof element)
-			element = s.library.find({is:element})["xpath"];
-
-		s.memory.current.element = element;
-		s.console(slovastick());
-
-		return s;
 	}
 	// click on element
 	s.click = function(a) {
-		var element = s.type.element(a || s.focus()).parents("a").andSelf().filter("a[href]:eq(0)").click();
+		var element = s.type.element(a || s.focus()).parents.andSelf().filter("a[href]:eq(0)").click();
 
 		if (element.attr("href") && !element.attr("onclick"))
 			window.document.location.replace(element.attr("href"));
 
 		return s;
 	};
-	//
-	s.title = function() {
-		
-	}
-	//
-	// 	-	-	-	-	-	-	-	-	-	-	aliaces	-	-	-	-	-	-	-	-	-	-	-
-	//
-	s.show = function(arg) {
-		s.go({is:arg, current:{is:false}});
-	}
 	//
 	// 	-	-	-	-	-	-	-	-	-	-	loading	-	-	-	-	-	-	-	-	-	-	-
 	//
@@ -1467,13 +1077,11 @@
 		}
 		//
 		,function() {
-			var scripts 		= $("script[src*='slovastick.js']")
-				,match  		= scripts.last().attr("src").match(/^(.*)slovastick\.js\??(.*)$/)
-				,script_src 	= match[1]
-				,script_search 	= match[2].split("#")[0]
-				,search 		= script_search.split("&")
-				,current_src 	= window.document.location.origin + window.document.location.pathname
-				;
+			var scripts 		= $("script[src*='slovastick.js']");
+			var match  			= scripts.last().attr("src").match(/^(.*)slovastick\.js(\?.*)?$/);
+			var script_src 		= match[1];
+			var script_search 	= match[2];
+			var current_src 	= window.document.location.origin + window.document.location.pathname;
 
 			scripts.not(scripts.last()).remove();
 
@@ -1503,26 +1111,6 @@
 			if (!s.option.program.src.sound)
 				s.option.program.src.sound = script_src + "sound/";
 
-			// requst
-			for (i in search) {
-				var kv = search[i].split("=");
-
-				if (!kv[0] || !kv[1])
-					continue;
-
-				if ("debug.mode" === kv[0]) {
-					var t = {
-						"true": true
-						,"false": false
-						,"all": "all"
-					};
-
-					if (t[kv[1]]) {
-						s.option.program.debug.mode = t[kv[1]];
-					}
-				}
-			}
-
 			if (!window.document.evaluate)
 				return $.getScript("http://wicked-good-xpath.googlecode.com/files/wgxpath.install.js")
 					.success(function() {
@@ -1534,28 +1122,29 @@
 		}
 		//
 		,function() {
-			$("#slovastick").remove();
-			var site_hello = $("hello:eq(0)").children().clone();
-			$("hello:eq(0)").remove();
-
 			s.plugin({
 				url: s.option.program.src.plugin + "hello.xml"
 				,prepend: "/html/body"
 				,callback: function() {
 					$("#slovastick")
-						.attr("title", "slovastick - DOM manipulator. Version " + s.option.program.version)
-						.prepend(site_hello);
+						.attr("title", "Slovastick - DOM manipulator. Version " + s.option.program.version)
 
-					// alert("test firefox")
-
-					s.memory.audio.signal = $('<audio id="slovastick_signal"></audio>')[0];
-					s.memory.audio.speech = $('<audio id="slovastick_speech"></audio>')[0];
+					s["memory audio signal"] = $('<audio id="slovastick_signal"></audio>')[0];
+					s["memory audio speech"] = $('<audio id="slovastick_speech"></audio>')[0];
 
 					$("#slovastick_iframe").contents().find("body").css({display:"none"})
-						.append(s.memory.audio.signal)
-						.append(s.memory.audio.speech);
+						.append(s["memory audio signal"])
+						.append(s["memory audio speech"]);
 
-					s.move("right");
+
+					$(s["memory audio speech"])
+						.on("end", function(){
+							s.library["audio play speech"]();
+						})
+				// .on("timeupdate", function(){
+				// })
+				// .data("timeout", setTimeout(play, 1000))
+
 					s.library.loader();
 				}
 			});
@@ -1592,25 +1181,7 @@
 				recursiveFix($("#slovastick"));
 			}
 
-			s.library.loader();
-		}
-		,function() {
 			s.on();
-			$(window).on("hashchange", function(event) {
-				event.preventDefault();
-
-				s.yellow("s2")
-			})
-			$(window).on("focus", function(event) {
-				// event.preventDefault();
-
-				s.yellow("focus")
-			})
-			$(window).on("blur", function(event) {
-				// event.preventDefault();
-
-				s.yellow("blur")
-			})
 			s.library.loader();
 		}
 	]});
