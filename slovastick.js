@@ -155,8 +155,6 @@
 	s["memory browser version"] 			= (browser[2] || "0");
 	s["memory current elements"] 			= undefined;
 	s["memory focused page"]				= true;
-	s["memory loader history"] 				= [];
-	s["memory loader queue"] 				= [];
 	s["memory recognition"] 				= webkitSpeechRecognition ? new webkitSpeechRecognition() : undefined;
 	s["memory text pieces for speech"] 		= [];
 	s["memory last element"]				= $();
@@ -308,42 +306,6 @@
 		myWindow.document.write("<p>hello</p>");
 
 		return;
-	}
-	//code dependencies loader
-	s["library loader"] = function(load) {
-		if (load) {
-			if ("function" === typeof a) {
-				s["memory loader queue"] 	= s["memory loader queue"].concat([a]);
-			}
-			else {
-				load.before 				= (load.before || []);
-				load.after 					= (load.after  || []);
-				s["memory loader queue"] 	= load.before.concat(s["memory loader queue"]);
-				s["memory loader queue"] 	= s["memory loader queue"].concat(load.after);
-			}
-
-			if (s["memory loader started"]) {
-				return;
-			}
-		}
-
-		s["memory loader started"] = true;
-		
-		if (s["memory loader queue"].length) {
-			var call = {};
-
-			s["memory loader history"].push(call);
-			call.function = s["memory loader queue"].shift();
-
-			try {
-				return call.result = call.function();
-			}
-			catch(e) {
-				s["red"](e, "on call last function", call.function.toString(), s["memory loader history"]);
-			}
-		}
-
-		return s["memory loader started"] = undefined;
 	}
 	//
 	s["library headlight element"] = function(param) {
@@ -763,6 +725,7 @@
 
 				if ($(event.target).data("slovastick")) {
 					var text = $.trim(s["library text self"](this));
+					s["green"](text);
 					s["library audio play speech"](text);
 				}
 
@@ -813,17 +776,17 @@
 
 					return;
 				}
-
 				// if not shift button
 				if (16 !== event.which) {
 					return;
 				}
 				//
-
 				$(window)
 					.one("keyup.slovastick", function(event) {
+						var element = s["memory last element"];
+
 						// if not shift button
-						if (16 !== event.which) {
+						if ((16 !== event.which) || !$(element).length) {
 							return;
 						}
 						//
@@ -833,14 +796,9 @@
 							return;
 						}
 
-						var element = s["memory last element"];
-
-						if (!$(element).length) {
-							return;
-						}
-
 						var xpath 	= s["library find"](element)["xpath"];
 						var text 	= $.trim(s["library text self"](element));
+
 						// if again shift pressed - start recognition
 						if (-1 !== s["console"]().indexOf(xpath)) {
 							s["library headlight element"]({
@@ -856,6 +814,7 @@
 							return;
 						}
 						//
+						s["green"](text);
 						s["console add xpath"](xpath);
 						s["library headlight element"]({
 							"element"	: s["memory current elements"]
