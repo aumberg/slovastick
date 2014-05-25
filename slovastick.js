@@ -1,37 +1,49 @@
 // 
 // slovastick - web-based DOM manipulator
 // manifesto  - http://minifesto.org/
+// license    - http://unlicense.org/UNLICENSE
 (function($) {
 	var s = window.slovastick = {};
 
 	// page
 
-	// s["page ?.com"] 						= [
-	// 	".//*[contains(@class, 'message')][last()]/span[2] | .//*[contains(@class, 'message')][last()]/span[3]"
-	// ]
+	// s["page *"] 							= ".//*[contains(@class, 'message')][last()]/span[3]"
+	s["page music.yandex.ru"] 				= function() {
+		// player
+		s["console add xpath"]("//*[@class='b-link js-player-title']");
+		s["console add xpath"]("//*[@class='b-link js-player-artist']");
+		s["console add xpath"]("//*[contains(@class, 'b-jambox__play')]").attr("title", "play song");
+		s["console add xpath"]("//*[contains(@class, 'b-jambox__prev')]").attr("title", "previous song");
+		s["console add xpath"]("//*[contains(@class, 'b-jambox__next')]").attr("title", "next song");
+		// search
+		s["console add xpath"]("//*[@id='search-input']").attr("title", "search song");
+		// list of music
+		s["console add xpath"]("//*[@id='js-content']/div[8]/div/div[3]/div[1]/a");
+	}
 
 	// memory
 
 	s["memory audio signal"] 				= undefined;
 	s["memory audio speech listened"] 		= 0;
 	s["memory audio speech"] 				= undefined;
+	s["memory browser audio extension"] 	= undefined;
+	s["memory browser name"] 				= undefined;
+	s["memory browser version"] 			= undefined;
+	s["memory current elements"] 			= undefined;
+	s["memory focused page"]				= true;
 	s["memory loader history"] 				= [];
 	s["memory loader queue"] 				= [];
-	s["memory page"] 						= undefined;
+	s["memory recognition"] 				= webkitSpeechRecognition ? new webkitSpeechRecognition() : undefined;
 	s["memory text pieces for speech"] 		= [];
 
 	// option
 
-	s["option browser audio extension"] 	= undefined;
-	s["option browser name"] 				= undefined;
-	s["option browser version"] 			= undefined;
 	s["option program debug mode"] 			= true; //false || true || "all"
 	s["option program debug src"] 			= "http://localhost/";
 	s["option program description"]			= "Slovastick - web-based DOM manipulator";
 	s["option program name"] 				= "Slovastick";
-	s["option program src plugin"]			= "";
-	s["option program src program"]			= "";
-	s["option program src sound"]			= "";
+	s["option program src"]					= "";
+	s["option sound src"]					= "";
 	s["option program status"]				= "off";
 	s["option program version"] 			= "0.2";
 	s["option user language"]				= "ru";
@@ -68,9 +80,9 @@
 	//
 	s["library audio play signal"] = function(strSignalName) {
 		var audio 	= s["memory audio signal"];
-		var ext 	= s["option browser audio extension"];
+		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user sound volume"];
-		var source 	= s["option program src sound"]
+		var source 	= s["option sound src"]
 
 		if (!audio || !volume || !ext) {
 			return;
@@ -86,6 +98,11 @@
 		s["memory audio speech"].pause();
 	}
 	//
+	s["library audio stop speech"] = function() {
+		s["memory audio speech"].pause();
+		s["memory text pieces for speech"] = [];
+	}
+	//
 	s["library audio add and play speech"] = function(text) {
 		if (!text || ("string" !== typeof text)) {
 			return;
@@ -98,7 +115,7 @@
 	//
 	s["library audio play speech"] = function(text, lang) {
 		var audio 	= s["memory audio speech"];
-		var ext 	= s["option browser audio extension"];
+		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user sound volume"];
 
 		if (!(audio.paused || audio.ended) || (0 > s["memory audio speech listened"])) {
@@ -128,14 +145,17 @@
 		text = $.trim(text.replace(/\s+/g, " "));
 
 		var lang = (lang || s["option user language"]);
-		var textPieces = s["library text pieces"]({"text":text, "range":90});
+		var textPieces = s["library text pieces"]({
+			"text":text
+			,"range":90
+		});
 
 		s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
 		text = encodeURIComponent(s["memory text pieces for speech"].shift());
 		// s["green"]("ok", text, !s["option user sound volume"], !audio, !text, !(audio.paused || audio.ended))
 
 		s["memory audio speech listened"]++;
-		s["green"]("audio play speech", text);
+		// s["green"]("audio play speech", text);
 		audio.volume = volume / 100;
 		audio.pause();
 		// google
@@ -198,23 +218,64 @@
 		return s["memory loader started"] = undefined;
 	}
 	//
+	s["library headlight element"] = function(param) {
+		param = $.extend(true, {
+			"element": $()
+			,"color": "rgba(0, 255, 0, 0.5)"
+		}, param);
+
+		param["element"].each(function() {
+			var oldBgColor = $(this).data("slovastick-oldBgColor");
+
+			if (!oldBgColor) {
+				oldBgColor = $(this).css("backgroundColor");
+				$(this).data("slovastick-oldBgColor", oldBgColor);
+			}
+
+			$(this)
+				.stop(true, true)
+				.animate({"backgroundColor"	: param["color"]}, 400, "linear")
+				.animate({"backgroundColor"	: oldBgColor}, 400, "linear");
+
+			// var offset = $(this).offset();
+			// $("<div class='slovastick' title='slovastick temporary block'>")
+			// 	.css({
+			// 		"position"	: "absolute"
+			// 		,"width"	: $(this).css("width")
+			// 		,"height"	: $(this).css("height")
+			// 		,"left"		: offset.left
+			// 		,"top"		: offset.top
+			// 		,"z-index"	: "2147483647"
+			// 		,"opacity"  : 0.8
+			// 		,"background-color": param["color"]
+			// 	})
+			// 	.prependTo($("body"))
+			// 	.delay().animate({"opacity": 0}, 1000, function() {
+			// 		$(this).remove();
+			// 	});
+		});
+	};
+	//
+	s["library speech stop recognition"] = function() {
+		if (!s["memory recognition"]) {
+			return;
+		}
+		
+		s["memory recognition"].stop();
+	}
+	//
 	s["library speech recognition"] = function() {
 		// http://stiltsoft.com/blog/2013/05/google-chrome-how-to-use-the-web-speech-api/
-		if (!('webkitSpeechRecognition' in window)) {
+
+		var interimResult;
+		var recognition = s["memory recognition"];
+
+		if (!recognition) {
 			return;
 		}
 
 		s["green"]("speech recognition");
-
-		if (s["memory recognition"]) {
-			s["memory recognition"].stop();
-			var recognition = s["memory recognition"];
-		}
-		else {
-			var recognition = s["memory recognition"] = new webkitSpeechRecognition();
-		}
-
-		var interimResult;
+		s["memory recognition"].stop();
 
 		recognition.lang = s["option user language"];
 		recognition.continuous = true;
@@ -279,7 +340,7 @@
 					xpath_result = window.document.evaluate(path_or_element, context[i], null, 0, null);
 				}
 				catch (e) {
-					return null;
+					return $();
 				}
 
 				for (var node; xpath_result && (node = xpath_result.iterateNext()); ) {
@@ -375,7 +436,7 @@
 		var clone 	= element.clone();
 		clone.children().remove();
 		
-		var result 	= element.text() || clone.val();
+		var result 	= element.text() || clone.val() || element.attr("title");
 		clone.remove();
 
 		return result;
@@ -468,59 +529,6 @@
 		s["option console"] 		= $("[name='console']", 	s["option panel"])
 			.css("width", s["option panel"].width());
 
-		s["option button mode"] 	= $("[name='mode']", 		s["option button"])
-			.on("change.slovastick", function() {
-				var mode = $(this).find(":selected").val().toLowerCase();
-
-				s["option console"]
-					.val("")
-					.off()
-					.on("focus", function() {
-						// s["yellow"]("I'am on console");
-					});
-
-				// words["after_current_element"] = function(ele) {};
-
-				if ("command" === mode) {
-
-
-					// words["after_current_element"] = function(ele) {
-					// 	var clone 	= $(ele).clone()
-					// 		,organs = clone.children().remove()
-					// 		,text 	= clone.text().replace(/\s+/g, " ")
-					// 		,found 	= s["library find"](ele)
-					// 		;
-
-					// 	clone.remove();
-
-					// 	s.library.ele().key("say", "in english " + text).run();
-
-					// 	s["option console"].val(
-					// 		  "-------text-------\r\n" 		+ text
-					// 		+ "\r\n-------xpath------\r\n"	+ found["xpath"] 
-					// 		+ "\r\n-------css--------\r\n"  + found["css"]);
-					// }
-
-					// s.memory.ele["after_current"]();
-
-					// setTimeout(function() {
-					// 	var allInBody = $("*", "body").not($("*", s["option panel"]).andSelf());
-
-					// 	allInBody.on("mouseover.slovastick-mouseover", function(event) {
-					// 		event.stopPropagation();
-					// 		s.library.ele(this).key("show-no-scroll", "")["show"]()["current"]();
-					// 	});
-
-					// 	$(window)
-					// 		.on("keydown.slovastick-mouseover keyup.slovastick-mouseover mousedown.slovastick-mouseover click.slovastick-mouseover", function() {
-					// 			$(this).add(allInBody)
-					// 				.off(".slovastick-mouseover");
-					// 		});
-					// }, 500);
-				}
-			})
-			.change();
-
 		s["option button"].language 	= $("[name='language']", 	s["option button"])
 			.on("change.slovastick", function() {
 				var language = $(this).find(":selected").val().toLowerCase();
@@ -553,28 +561,58 @@
 			var element = $(this);
 			var text = $.trim(s["library text self"](element));
 
-			element.data("slovatick", text);
+			element.data("slovastick", text);
 		});
 
 		// register DOM change
 		var x = function () {
+			setTimeout(x, 1000);
+
 			var elements = s["library find"](s["console"]());
+
+			s["memory current elements"] = elements;
 
 			if (!elements.length) {
 				return;
 			}
 
-			elements.each(function() {
-				var element = $(this);
-				var text = $.trim(s["library text self"](element));
+			var useTabIndex;
 
-				if (text && (element.data("slovatick") !== text)) {
+			elements.each(function() {
+				var element 	= $(this);
+				var text 		= $.trim(s["library text self"](element));
+				var isChanged 	= (text && (element.data("slovastick") !== text));
+
+				if (isChanged) {
+					element.data("slovastick", text);
+
+					if (!s["memory focused page"]) {
+						text = document.location.host + " " + text;
+					}
+
 					s["library audio add and play speech"](text);
-					element.data("slovatick", text);
+				}
+
+				if (isChanged || !element.attr("tabindex")) {
+					if (!useTabIndex) {
+						useTabIndex = 1;
+
+						$("*[tabindex]").each(function() {
+							if ($(this).data("slovastick")) {
+								$(this).removeAttr("tabindex");
+							}
+							else if (useTabIndex <= parseInt($(this).attr("tabindex"))) {
+								useTabIndex = parseInt($(this).attr("tabindex")) + 1;
+							}
+						})						
+					}
+					else {
+						useTabIndex++;
+					}
+
+					element.attr("tabindex", useTabIndex);	
 				}
 			});
-
-			setTimeout(x, 1000);
 		}
 
 		x();
@@ -583,7 +621,17 @@
 			.on("focus.slovastick_memory_element, mouseenter.slovastick_memory_element", function(event) {
 				event.preventDefault();
 				event.stopPropagation();
- 
+
+				if ($(event.target).data("slovastick")) {
+					s["library headlight element"]({
+						"element"	: $(event.target)
+						,"color"	: "rgba(255, 255, 0, 0.5)"
+					});
+
+					var text = $.trim(s["library text self"](this));
+					s["library audio play speech"](text);
+				}
+
 				s["memory last element"] = event.target;
 			});
 
@@ -593,6 +641,12 @@
 				s["option console"].css("max-height",	($(window).height() - 90) + "px");
 			})
 			.resize()
+			.on("focus", function() {
+				s["memory focused page"] = true;
+			})
+			.on("blur", function() {
+				s["memory focused page"] = false;
+			})
 			.on("keydown.slovastick", function(event) {
 				// "enter"		: 13
 				// ,"shift" 	: 16
@@ -602,6 +656,10 @@
 				// ,"up" 		: 38
 				// ,"right" 	: 39
 				// ,"down" 		: 40
+
+				s["library audio stop speech"]();
+				s["library speech stop recognition"]();
+
 
 				// if not shift button
 				if (16 !== event.which) {
@@ -616,7 +674,6 @@
 							return;
 						}
 						//
-
 						if ("" + window.getSelection()) {
 							s["library audio play speech"]("" + window.getSelection());
 
@@ -630,10 +687,14 @@
 						}
 
 						var xpath 	= s["library find"](element)["xpath"];
-						var offset 	= element.offset();
 						var text 	= $.trim(s["library text self"](element));
 						// if again shift pressed - start recognition
 						if (-1 !== s["console"]().indexOf(xpath)) {
+							s["library headlight element"]({
+								"element"	: s["memory current elements"]
+								,"color"	: "rgba(255, 255, 0, 0.8)"
+							});
+
 							if (-1 !== $.inArray(element.get(0).tagName, ["INPUT", "TEXTAREA"])) {
 								s["memory last input element"] = element;
 								s["library speech recognition"]();
@@ -641,31 +702,31 @@
 
 							return;
 						}
-						// 
-						s["console"](xpath + "\r\n" + s["console"]());
+						//
+						s["console add xpath"](xpath);
+						s["library headlight element"]({
+							"element"	: s["memory current elements"]
+							,"color"	: "rgba(255, 255, 0, 0.8)"
+						});
+						s["library headlight element"]({"element":element});
 						s["library audio play speech"](text);
-						element.data("slovatick", text);				
-
-						$("<div class='slovastick' title='slovastick temporary block'>")
-							.css({
-								"position"	: "absolute"
-								,"width"	: element.css("width")
-								,"height"	: element.css("height")
-								,"left"		: offset.left
-								,"top"		: offset.top
-								,"z-index"	: "2147483647"
-								,"opacity"  : 0.8
-								,"background-color": "green"
-							})
-							.prependTo($("body"))
-							.delay().animate({"opacity": 0}, 1000, function() {
-								$(this).remove();
-							});
-					
+						element.data("slovastick", text);				
 					});
-				
 			})
 
+		s["option program status"] = "on";
+
+		var xpath = s["page " + document.location.host];
+
+		if (!xpath && s["page *"]) {
+			xpath = s["page *"];
+		}
+
+		if ("function" === typeof xpath) {
+			xpath = xpath();
+		}
+
+		s["console"](xpath);
 		s["option program status"] = "on";
 		s["yellow"]("I there! Hello :>");
 	};
@@ -708,6 +769,21 @@
 		s["option console"].val(text);
 
 		return s;
+	}
+	//
+	s["console add xpath"] = function(xpath) {
+		if (!s["option console"] || !xpath) {
+			return;
+		}
+
+		if (s["console"]()) {
+			s["option console"].val(s["console"]() + " | " + xpath);
+		}
+		else {
+			s["option console"].val(xpath);
+		}
+
+		return s["library find"](xpath);
 	}
 	//
 	s["plugin"] = function(plugin) {
@@ -770,15 +846,6 @@
 	s["type css"] = function(element) {
 		return s["library find"](element)["css"];
 	}
-	// click on element
-	// s.click = function(a) {
-	// 	var element = s["type element"](a || s.focus()).parents.andSelf().filter("a[href]:eq(0)").click();
-
-	// 	if (element.attr("href") && !element.attr("onclick"))
-	// 		window.document.location.replace(element.attr("href"));
-
-	// 	return s;
-	// };
 	//
 	// 	-	-	-	-	-	-	-	-	-	-	loading	-	-	-	-	-	-	-	-	-	-	-
 	//
@@ -796,17 +863,17 @@
 
 			if (audio && audio.canPlayType) {
 				if (audio.canPlayType("audio/mpeg")) {
-					s["option browser audio extension"] = ".mp3";
+					s["memory browser audio extension"] = ".mp3";
 				}
 				else if (audio.canPlayType("audio/ogg")) {
-					s["option browser audio extension"] = ".ogg";
+					s["memory browser audio extension"] = ".ogg";
 				}
 			}
 
-			s["option browser name"] 	= (browser[1] || "");
-			s["option browser version"] = (browser[2] || "0");
+			s["memory browser name"] 	= (browser[1] || "");
+			s["memory browser version"] = (browser[2] || "0");
 
-			if (!$ || ("2.0.2" !== ($.fn && $.fn.jquery))) {
+			if (!($ && $.fn && $.fn.jquery) || ("2.0.2" !== $.fn.jquery)) {
 				var scripts = window.document.getElementsByTagName("script");
 
 				for (var i = 0; i < scripts.length; i++) {
@@ -823,8 +890,8 @@
 					var masScript = attSrc.match(/^(.*)slovastick\.js/);
 
 					if (masScript) {
-						if (!s["option program src program"]) {
-							s["option program src program"] = masScript[1];
+						if (!s["option program src"]) {
+							s["option program src"] = masScript[1];
 						}
 
 						var script 		= window.document.createElement("script");
@@ -834,7 +901,7 @@
 							s["library loader"]();
 						}
 
-						script.src 		= encodeURI(s["option program src program"] + "lib/jquery-2.0.2.min.js");
+						script.src 		= encodeURI(s["option program src"] + "lib/jquery-2.0.2.min.js");
 
 						return window.document.getElementsByTagName('head')[0].appendChild(script);
 					}
@@ -851,10 +918,25 @@
 
 			$.fn.reverse = [].reverse;
 
+			/*
+			 Color animation 1.6.0
+			 http://www.bitstorm.org/jquery/color-animation/
+			 Copyright 2011, 2013 Edwin Martin <edwin@bitstorm.org>
+			 Released under the MIT and GPL licenses.
+			*/
+			(function(d){function h(a,b,e){var c="rgb"+(d.support.rgba?"a":"")+"("+parseInt(a[0]+e*(b[0]-a[0]),10)+","+parseInt(a[1]+e*(b[1]-a[1]),10)+","+parseInt(a[2]+e*(b[2]-a[2]),10);d.support.rgba&&(c+=","+(a&&b?parseFloat(a[3]+e*(b[3]-a[3])):1));return c+")"}function f(a){var b;return(b=/#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})/.exec(a))?[parseInt(b[1],16),parseInt(b[2],16),parseInt(b[3],16),1]:(b=/#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])/.exec(a))?[17*parseInt(b[1],16),17*parseInt(b[2],
+			16),17*parseInt(b[3],16),1]:(b=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(a))?[parseInt(b[1]),parseInt(b[2]),parseInt(b[3]),1]:(b=/rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9\.]*)\s*\)/.exec(a))?[parseInt(b[1],10),parseInt(b[2],10),parseInt(b[3],10),parseFloat(b[4])]:l[a]}d.extend(!0,d,{support:{rgba:function(){var a=d("script:first"),b=a.css("color"),e=!1;if(/^rgba/.test(b))e=!0;else try{e=b!=a.css("color","rgba(0, 0, 0, 0.5)").css("color"),
+			a.css("color",b)}catch(c){}return e}()}});var k="color backgroundColor borderBottomColor borderLeftColor borderRightColor borderTopColor outlineColor".split(" ");d.each(k,function(a,b){d.Tween.propHooks[b]={get:function(a){return d(a.elem).css(b)},set:function(a){var c=a.elem.style,g=f(d(a.elem).css(b)),m=f(a.end);a.run=function(a){c[b]=h(g,m,a)}}}});d.Tween.propHooks.borderColor={set:function(a){var b=a.elem.style,e=[],c=k.slice(2,6);d.each(c,function(b,c){e[c]=f(d(a.elem).css(c))});var g=f(a.end);
+			a.run=function(a){d.each(c,function(d,c){b[c]=h(e[c],g,a)})}}};var l={aqua:[0,255,255,1],azure:[240,255,255,1],beige:[245,245,220,1],black:[0,0,0,1],blue:[0,0,255,1],brown:[165,42,42,1],cyan:[0,255,255,1],darkblue:[0,0,139,1],darkcyan:[0,139,139,1],darkgrey:[169,169,169,1],darkgreen:[0,100,0,1],darkkhaki:[189,183,107,1],darkmagenta:[139,0,139,1],darkolivegreen:[85,107,47,1],darkorange:[255,140,0,1],darkorchid:[153,50,204,1],darkred:[139,0,0,1],darksalmon:[233,150,122,1],darkviolet:[148,0,211,1],fuchsia:[255,
+			0,255,1],gold:[255,215,0,1],green:[0,128,0,1],indigo:[75,0,130,1],khaki:[240,230,140,1],lightblue:[173,216,230,1],lightcyan:[224,255,255,1],lightgreen:[144,238,144,1],lightgrey:[211,211,211,1],lightpink:[255,182,193,1],lightyellow:[255,255,224,1],lime:[0,255,0,1],magenta:[255,0,255,1],maroon:[128,0,0,1],navy:[0,0,128,1],olive:[128,128,0,1],orange:[255,165,0,1],pink:[255,192,203,1],purple:[128,0,128,1],violet:[128,0,128,1],red:[255,0,0,1],silver:[192,192,192,1],white:[255,255,255,1],yellow:[255,255,
+			0,1],transparent:[255,255,255,0]}})($);	
+					
+			// $('backgroundColor').animate({color: '#E4D8B8'})
 			// on document loaded
 			$(function(){
 				s["library loader"]();
 			});
+			//
 		}
 		//
 		,function() {
@@ -883,16 +965,12 @@
 
 			scripts.attr("title", "slovastick - DOM manipulator. Version " + s["option program version"])
 
-			if (!s["option program src program"]) {
-				s["option program src program"] = script_src;
+			if (!s["option program src"]) {
+				s["option program src"] = script_src;
 			}
 
-			if (!s["option program src plugin"]) {
-				s["option program src plugin"] = script_src + "plugin/";
-			}
-
-			if (!s["option program src sound"]) {
-				s["option program src sound"] = script_src + "sound/";
+			if (!s["option sound src"]) {
+				s["option sound src"] = script_src + "sound/";
 			}
 
 			if (!window.document.evaluate) {
@@ -907,49 +985,34 @@
 		}
 		//
 		,function() {
-			s["plugin"]({
-				url: s["option program src plugin"] + "hello.xml"
-				,prepend: "/html/body"
-				,callback: function() {
-					$("#slovastick")
-						.attr("title", "Slovastick - DOM manipulator. Version " + s["option program version"])
+			$('<div id="slovastick_panel" title="slovastick console, focusing by shift + control" style="display:none; position:fixed; left:10px; bottom:10px; font-size:16px; z-index:2147483646; padding:5px;  background-color:#DDD; color:black; border: 1px solid black; border-radius: 10px;"><div name="button"><div name="program" style="float:left;"></div><div style="float:left;">|</div><div style="float:left;"><select name="language"><option>English</option><option selected>Russian</option></select></div><div style="float:left;">|</div><div style="float:left;"><select name="sound"><option>Volume 100</option><option selected>Volume 75</option><option>Volume 50</option><option>Volume 25</option><option>Volume 0</option></select></div><div style="float:left;">|</div><button name="kick" style="float:left;">⇄</button><iframe id="slovastick_iframe" width="0px" height="0px"></iframe></div><textarea name="console" mode="xpath" style="font-size:16px; height:35px;"></textarea></div>')
+				.attr("title", "Slovastick - DOM manipulator. Version " + s["option program version"])
+				.prependTo("body");
 
-					s["memory audio signal"] = $('<audio id="slovastick_signal"></audio>')[0];
-					s["memory audio speech"] = $('<audio id="slovastick_speech"></audio>')[0];
+			s["memory audio signal"] = $('<audio id="slovastick_signal"></audio>')[0];
+			s["memory audio speech"] = $('<audio id="slovastick_speech"></audio>')[0];
 
-					$("#slovastick_iframe").contents().find("body").css({display:"none"})
-						.append(s["memory audio signal"])
-						.append(s["memory audio speech"]);
+			$("#slovastick_iframe").contents().find("body")
+				.css({display:"none"})
+				.append(s["memory audio signal"])
+				.append(s["memory audio speech"]);
 
 
-					// this event, because google return bad mp3 file
-					// another audio events: ended, durationchange ,pause ,play ,timeupdate ,volumechange
-					$(s["memory audio speech"])
-						
-						.on("timeupdate", function(){
-							if (this.ended) {
-								s["library audio play speech"]();
-							}
-						})
-					// 
+			// this event, because google return bad mp3 file
+			// another audio events: ended, durationchange ,pause ,play ,timeupdate ,volumechange
+			$(s["memory audio speech"])
+				.on("timeupdate", function(){
+					if (this.ended) {
+						s["library audio play speech"]();
+					}
+				})
 
-					s["library loader"]();
-				}
-			});
-		}
-		,function() {
-			// load plugin for this host
-			var host = window.document.location.hostname;
+			s["library loader"]();
 
-			if ("www." === host.slice(0, 4)) {
-				host = host.slice(4);
-			}
-
-			s["plugin"]({url: s["option program src plugin"] + host + ".xml", callback: s["library loader"]});
 		}
 		,function() {
 			// fix browser bug or jQuery - http://bugs.jquery.com/ticket/13465
-			if (-1 !== $.inArray(s["option browser name"], ["mozilla", "msie"])) {
+			if (-1 !== $.inArray(s["memory browser name"], ["mozilla", "msie"])) {
 				function recursiveFix(element) {
 					$(element).children().each(function() {
 						var att = (this.attributes || []);
