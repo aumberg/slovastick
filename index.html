@@ -3,76 +3,22 @@
 <head>
 	<title>Slovastick - web-based DOM manipulator</title>
 	<script type="text/javascript" src="slovastick.js"></script>
+	<script type="text/javascript">
+		slovastick["console add xpath"]("//*[@id='description']/h3/div");
+		slovastick["console add xpath"]("//*[@id='description']/h3/div/h2");
+		slovastick["console add xpath"]("//ul/li/p");
+		slovastick["console add xpath"]("//ul/li/ol/li");
+		slovastick["console add xpath"]("//ul/li/ol/li//a");
+		slovastick["console add xpath"]("//input | //textarea");
+	</script>
 </head>
 <body style="height:2000px; background-color:#DDD">
-	<hello>
-		<help>
-			<!-- slovastick.move("right") -->
-			<description>
-				<!-- slovastick.show("//*[@id='description']") -->
-				<bookmarking>
-					<!-- slovastick.show("//*[@id='description']/h3/div[1]/a[1]") -->
-				</bookmarking>
-			</description>
-			<start>
-				<!-- slovastick.show("//*[@id='getstarted']/p") -->
-				<item>
-					<!-- slovastick.show("//*[@id='getstarted']/p/../ol/li") -->
-				</item>
-			</start>
-			<shortcuts>
-				<!-- slovastick.show("/html/body/ul/li[2]/p") -->
-				<item>
-					<!-- slovastick.show("/html/body/ul/li[2]/p/../ol/li") -->
-				</item>
-			</shortcuts>
-			<plan>
-				<!-- slovastick.show("/html/body/ul/li[3]/p") -->
-				<item>
-					<!-- slovastick.show("/html/body/ul/li[3]/p/../ol/li") -->
-				</item>
-			</plan>
-			<references>
-				<!-- slovastick.show("/html/body/ul/li[5]/p") -->
-				<item>
-					<!-- slovastick.show("/html/body/ul/li[5]/p/../ol/li") -->
-					<ref>
-						<!-- slovastick.show("/html/body/ul/li[5]/p/../ol/li//a") -->
-					</ref>
-				</item>
-			</references>
-			<license>
-				<!-- slovastick.show("/html/body/ul/li[6]/p") -->
-				<item>
-					<!-- slovastick.show("/html/body/ul/li[6]/p/../ol/li") -->
-					<ref>
-						<!-- slovastick.show("/html/body/ul/li[6]/p/../ol/li//a") -->
-					</ref>
-				</item>
-			</license>
-			<other>
-				<!-- slovastick.show("/html/body/ul/li[7]/p") -->
-				<text>
-					<!-- slovastick.show("/html/body/ul/li[7]//textarea") -->
-				</text>
-			</other>
-		</help>
-	</hello>
 	<div id="description">
 		<h3>
 			<div style="text-align:center;">
 				Slovastick - web-based DOM manipulator
 				<br/>
 				<br/>
-				This program works like 
-				<a href="http://194.28.132.189/build/output/">
-					extension 
-				</a>
-				for 
-				<a href="http://194.28.132.189/build/output/slovastick.crx">
-					Chrome
-				</a>
-
 <!-- 
 				<a href="javascript:(function(){var script=document.createElement('script');script.src='http://194.28.132.189/slovastick.js#'+(new Date().getTime());document.body.appendChild(script);}())">
 					slovastick-bookmark
@@ -84,45 +30,37 @@
 				<br/>
 				<br/>
 				<br/>
+				Now, you need to press TAB key, for move to another element
+				<br/>
+				<br/>
+				<br/>
+				<br/>
 				WARNING! Currently that program in 
 				<h2>
-					DEEP-DEEP DEVELOPING stage.
+					DEEP-DEEP DEVELOPING stage
 				</h2>
-				Please note.
+				Please note. Now it work only in Chrome
+				<br/>
+				<br/>
+				<br/>
 				<br/>
 			</div>
 		</h3>
 	</div>
 	<ul>
-		<li id="getstarted">
-			<p>
-				Get started! Lets Go!
-			</p>
-			<ol>
-				<li>
-					It work like extension for Chrome, or embeds on web site
-				</li>
-			</ol>
-		</li>
 		<li>
 			<p>
-				Кeyboard shortcuts
+				Кeyboard shortcuts.
 			</p>
 			<ol>
 				<li>
-					"Up + Down", or "Shift + Control" with pause - focus on slovastick console
+					You can mark element by press key SHIFT, for this you need to put your mouse over the element or focus on it by press TAB key.
 				</li>
 				<li>
-					"Arrow Up", or "Shift" - move to preceding element
+					You can select text and press SHIFT for listen speech.
 				</li>
 				<li>
-					"Arrow Down", or "Control" - move to following element
-				</li>
-				<li>
-					"Arrow Left", or "Shift" with pause - move to ancestor element
-				</li>
-				<li>
-					"Arrow Right", or "Control" with pause - move to child element
+					Press TAB for navitation on elements
 				</li>
 			</ol>
 		</li>
@@ -132,7 +70,7 @@
 			</p>
 			<ol>
 				<li>
-					develop it
+					Develop it...
 				</li>
 			</ol>
 		</li>
@@ -145,7 +83,7 @@
 					Good idea or question, send an email - slovastick@mail.ru
 				</li>
 				<li>
-					Information about bugs write to  
+					For download source code or sends bugs, write to  
 					<a href="https://github.com/aumberg/slovastick/issues">
 						github
 					</a>
@@ -216,7 +154,7 @@
 		</li>
 		<li>
 			<p>
-				Pass text in area, move on it and listen speech
+				Put text in this field, move on it and listen speech
 			</p>
 			<ol>
 				<textarea>hello</textarea>
