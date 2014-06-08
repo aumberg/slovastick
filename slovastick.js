@@ -80,12 +80,13 @@
 	}
 
 	$(function() {
-		elements = $('<div id="slovastick_panel" style="display:none;position:fixed;left:10px;bottom:10px;z-index:2147483646;padding:5px; background-color:#DDD;color:black;border:1px solid black;border-radius:10px;"><button name="kick" title="Slovastick" style="float:left;">⇄</button><div style="float:left;">|</div><div name="program" style="float:left;"></div><div style="float:left;">|</div><div style="float:left;"><select name="language"><option>English</option><option selected>Russian</option></select></div><div style="float:left;">|</div><div style="float:left;"><select name="sound"><option>Volume 100</option><option selected>Volume 75</option><option>Volume 50</option><option>Volume 25</option><option>Volume 0</option></select></div><br/><textarea name="console" style="resize:both;min-height:0px;"></textarea><iframe id="slovastick_iframe" width="0px" height="0px" style="display:none;"></iframe></div>')
+		s["memory audio signal"] 			= window.document.createElement("audio");
+		s["memory audio speech"] 			= window.document.createElement("audio");
+
+		$('<div id="slovastick_panel" style="display:none;position:fixed;left:10px;bottom:10px;z-index:2147483646;padding:5px; background-color:#DDD;color:black;border:1px solid black;border-radius:10px;"><button name="kick" title="Slovastick" style="float:left;">⇄</button><div style="float:left;">|</div><div name="program" style="float:left;"></div><div style="float:left;">|</div><div style="float:left;"><select name="language"><option>English</option><option selected>Russian</option></select></div><div style="float:left;">|</div><div style="float:left;"><select name="sound"><option>Volume 100</option><option selected>Volume 75</option><option>Volume 50</option><option>Volume 25</option><option>Volume 0</option></select></div><br/><textarea name="console" style="resize:both;min-height:0px;"></textarea><iframe id="slovastick_iframe" width="0px" height="0px" style="display:none;"></iframe></div>')
 			.attr("title", s["option program description"] + " (version " + s["option program version"] + ")")
 			.prependTo("body");
 
-		s["memory audio signal"] = window.document.createElement("audio");
-		s["memory audio speech"] = window.document.createElement("audio");
 		// if not mozilla
 		if (-1 === $.inArray(s["memory browser name"], ["mozilla"])) {
 			$("#slovastick_iframe").contents().find("body")
@@ -107,31 +108,25 @@
 				}
 			});
 		//
-		s["library find"](s["console"]()).each(function() {
-			$(this).data("slovastick", s["library text self"](this));
-		});
+		s["console"](s["console"]());
 		// register DOM change
 		(function x() {
 			setTimeout(x, 2000);
 
-			var elements = s["memory current elements"] = s["library find"](s["console"]());
-
-			if (!elements.length) {
-				return;
-			}
-
+			var oldCurrent = s["memory current elements"];
+			var elements = s["library find"](s["console"]());
+			var changed = ((elements.length !== oldCurrent.length) || oldCurrent.not(elements).length)
 			var textForSpeech = "";
 
-			elements.each(function() {
-				if (-1 !== $.inArray(this.tagName, ["INPUT", "TEXTAREA"])) {
-					return;
-				}
+			// console.log(elements.length, oldCurrent.length)
 
+			elements.not("input, textarea").each(function() {
 				var element = $(this);
-				var text 	= s["library text self"](element);
+				var text = s["library text self"](element);
+				var data = element.data("slovastick element self text");
 
-				if (text && (element.data("slovastick") !== text)) {
-					element.data("slovastick", text);
+				if (text && (data !== text)) {
+					element.data("slovastick element self text", text);
 					textForSpeech += text + ". ";
 				}
 			});
@@ -143,7 +138,11 @@
 				}
 
 				s["library audio add and play speech"](textForSpeech);
-				s["update tabindex"](elements);
+			}
+
+			if (changed) {
+				s.red("changed")
+				s["console"](s["console"]());
 			}
 		}());
 
@@ -295,11 +294,11 @@
 		}, param);
 
 		param["element"].each(function() {
-			var oldBgColor = $(this).data("slovastick-oldBgColor");
+			var oldBgColor = $(this).data("slovastick old bg color");
 
 			if (!oldBgColor) {
 				oldBgColor = $(this).css("backgroundColor");
-				$(this).data("slovastick-oldBgColor", oldBgColor);
+				$(this).data("slovastick old bg color", oldBgColor);
 			}
 
 			$(this)
@@ -395,10 +394,10 @@
 	s["library find"] = function(path_or_element, context) {
 		context = ("string" === typeof context) ? s["library find"](context) : $(document);
 
+		var result = $();
+
 		// find element by path
 		if ("string" === typeof path_or_element) {
-			result = $();
-
 			try {
 				return $(path_or_element, context);
 			}
@@ -497,7 +496,7 @@
 			return result;
 		}
 
-		return $();
+		return result;
 	}
 	//slice string for parts. It need for service "google translate"
 	s["library text self"] = function(element) {
@@ -585,41 +584,59 @@
 		return null;
 	};
 	//
-	s["update tabindex"] = function(element) {
-		var useTabIndex = 1;
+	s["update tabindex"] = function() {
+		var elements = s["memory current elements"];
+		var useTabIndex = 1; 
+
+		//???maybe need s["memory predefined tabindex"] = $("*[tabindex]") 
 
 		$("*[tabindex]").each(function() {
-			var tabIndex 	= parseInt($(this).attr("tabindex"));
-			var isNotUndef  = (undefined !== $(this).data("slovastick"));
+			if (undefined !== $(this).data("slovastick element self text")) {
+				$(this).removeAttr("tabindex").removeData("slovastick element self text");
 
-			if (isNotUndef && !element.filter(this).length && (useTabIndex <= tabIndex)) {
+				return;
+			}
+
+			var tabIndex = parseInt($(this).attr("tabindex"));
+
+			if (useTabIndex <= tabIndex) {
 				useTabIndex = tabIndex + 1;
 			}
 		});
 
-		$(element).each(function() {
-			if (useTabIndex !== $(this).attr("tabindex")) {			
-				$(this).attr("tabindex", useTabIndex);	
-				useTabIndex++;	
-			}
-		});
+		for (var i in s["memory current elements array"]) {
+			s["memory current elements array"][i].each(function() {
+				if (useTabIndex !== $(this).attr("tabindex")) {			
+					$(this).attr("tabindex", useTabIndex);	
+					useTabIndex++;	
+				}
+			});
+		}
 	}
 	//
 	s["console"] = function(xpath) {
-		if (xpath) {
-			var elements = s["memory current elements"] = s["library find"](xpath);
-
-			elements.each(function() {
-				$(this).data("slovastick", s["library text self"](this));
-			});
-			
-			s["option console"].val(xpath);
-			s["update tabindex"](elements);
-
-			return elements;
+		if ("string" !== typeof xpath) {
+			return s["option console"].val().replace("\\n", "\n");
 		}
 
-		return s["option console"].val();
+		s["memory current elements"] = $();
+		s["memory current elements array"] = [];
+
+		var paths = xpath.split(/\s*\r?\n\|\s*|\s*\|\r?\n\s*/g);
+
+		for (var i in paths) {
+			var element = s["library find"](paths[i]).each(function() {
+				$(this).data("slovastick element self text", (s["library text self"](this) || ""));
+			});
+
+			s["memory current elements"] = s["memory current elements"].add(element);
+			s["memory current elements array"].push(element);
+		}
+
+		s["option console"].val(xpath);
+		s["update tabindex"]();
+
+		return s["memory current elements"];
 	}
 	//
 	s["console add xpath"] = function(param) {
@@ -631,7 +648,12 @@
 			param = s["library find"](element)["xpath"];
 		}
 
-		var xpath = s["console"]() ? s["console"]() + " | " + param : param;
+		var xpath = s["console"]() ? s["console"]() + "\n| " + param : param;
+
+		s["library headlight element"]({
+			"element"	: element
+			,"color"	: "rgba(0, 255, 0, 0.5)" //green
+		});
 
 		s["console"](xpath);
 
@@ -677,7 +699,7 @@
 				.css("width", panel.width())
 				.val(s["console"]());
 
-			$(window)	
+			$(window)
 				.on("resize.slovastick", function() {
 					s["option console"].css({
 						"max-width"		: ($(window).width()  - 40) + "px"
@@ -698,20 +720,15 @@
 		}
 		// 
 		$("*", "body") //.not($("*", "#slovastick"))
-			.on("click.slovastick-memory-element", function(event) {
-				//maybe can recursive calling?
-				$(this).mouseenter();
-			})
 			.on("focus.slovastick-memory-element", function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-
 				var element = s["memory last element"] = $(this);
 
 				s["library audio stop speech"]();
 				s["library speech stop recognition"]();
 
-				if (undefined === element.data("slovastick")) {
+				element.mouseover();
+
+				if (element.not(s["memory current elements"]).length) {
 					s["library headlight element"]({
 						"element"	: element
 						,"color"	: "rgba(0, 0, 255, 0.5)" //blue
@@ -720,36 +737,24 @@
 					return;
 				}
 
-				s["library audio play speech"](element);
-			})
-			.on("mouseenter.slovastick-memory-element", function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-
-				if (-1 === $.inArray(this.tagName, ["INPUT", "TEXTAREA"])) {
-					var element = s["memory last element"] = $(this);
-				}
-				else {
-					var element = s["memory last input element"] = $(this);
-				}
-
-				if (undefined === element.data("slovastick")) {
-					return;
-				}
-
-				if (s["memory current elements"].filter(element).length === element.length) {
-					s["library headlight element"]({
-						"element"	: element
-						,"color"	: "rgba(255, 255, 0, 0.5)" //yellow
-					});
-
-					return;
-				}
-
 				s["library headlight element"]({
 					"element"	: element
-					,"color"	: "rgba(0, 255, 0, 0.5)" //green
+					,"color"	: "rgba(255, 255, 0, 0.5)" //yellow
 				});
+
+				s["library audio play speech"](element);
+			})
+			.on("mouseover.slovastick-memory-element", function(event) {
+				event.stopPropagation();
+
+				var element = $(this);
+
+				if (element.not("input, textarea").length) {
+					s["memory last element"] = element;
+				}
+				else {
+					s["memory last input element"] = element;
+				}
 			});
 
 		$(window)
@@ -790,9 +795,6 @@
 				$(window)
 					.one("keydown.slovastick-shift", function(event) {
 						if ((16 === event.which)) {
-							event.preventDefault();
-							event.stopPropagation();
-
 							return;
 						}
 
@@ -815,26 +817,19 @@
 
 							return;
 						}
+
 						// if console have xpath for element
-						if (current.filter(element).length === element.length) {
+						if (!element.not(current).length) {
 							s["library headlight element"]({
-								"element"	: s["memory current elements"]
-								,"color"	: "rgba(255, 255, 0, 0.8)"
+								"element"	: current
+								,"color"	: "rgba(255, 255, 0, 0.8)" // yellow
 							});
-							//
+
 							return;
 						}
 						//
-						s["console add xpath"](element).focus().mouseenter();
+						s["console add xpath"](element);
 					});
-			})
-			.on("keyup.slovastick", function(event) {
-				// if TAB pressed
-				if (9 === event.which) {
-					s["memory last element"].mouseenter();
-
-					return;
-				}
 			});
 
 		var xpath = (s["page " + document.location.host] || s["page *"]);
@@ -860,6 +855,7 @@
 	s["memory browser name"] 				= (browser[1] || "");
 	s["memory browser version"] 			= (browser[2] || "0");
 	s["memory current elements"] 			= $();
+	s["memory current elements array"] 		= [];
 	s["memory focused page"]				= true;
 	s["memory recognition"] 				= window.webkitSpeechRecognition ? new webkitSpeechRecognition() : undefined;
 	s["memory text pieces for speech"] 		= [];
@@ -877,7 +873,7 @@
 	s["option program version"] 			= "0.2";
 	s["option user language"]				= "ru";
 	s["option user sound volume"]			= 75;
-	s["option console"]						= $("<input type='text'>");
+	s["option console"]						= $("<textarea></textarea>");
 
 	// page
 
