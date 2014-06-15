@@ -97,14 +97,6 @@
 				.append(s["memory audio signal"])
 				.append(s["memory audio speech"]);
 		}
-		// this event, because google return bad mp3 file
-		// another audio events: ended, durationchange ,pause ,play ,timeupdate ,volumechange
-		$(s["memory audio speech"])
-			.on("timeupdate", function(){
-				if (this.ended) {
-					s["library audio play speech"]();
-				}
-			});
 		//
 		s["console"](s["console"]());
 		// register DOM change
@@ -127,21 +119,17 @@
 				}
 			});
 
-			if (textForSpeech) {
-				if (!s["memory focused page"]) {
-					textForSpeech = document.location.host + ": " + textForSpeech;
-					s.green(textForSpeech);
-				}
+			textForSpeech = $.trim(textForSpeech);
 
+			if (textForSpeech) {
 				s["library audio add and play speech"](textForSpeech);
 			}
 
 			if (changed) {
-				s.red("changed")
 				s["console"](s["console"]());
 			}
 		}());
-
+		//
 		s["on"]();
 	})
 
@@ -195,11 +183,35 @@
 	}
 	//
 	s["library audio stop speech"] = function() {
-		s["memory audio speech"].pause();
+		var audio = s["memory audio speech"];
+
+		if (!audio) {
+			return;
+		}
+		
+		clearTimeout(audio.timeoutForUpdateListened);
+		clearTimeout(s["memory audio speech waiting timeout"]);
+		audio.pause();
+		audio.timeoutForUpdateListened = setTimeout(function(){
+			s["memory audio speech listened"] = 0;
+		}, 5000);
+		s["memory audio speech waiting timeout"] = undefined;
 		s["memory text pieces for speech"] = [];
+		// not 'ended' event, because google return bad mp3 file
+		// another audio events: ended, durationchange ,pause ,play ,timeupdate ,volumechange
+		$(audio)
+			.off("timeupdate.slovastick")
+			.on("timeupdate.slovastick", function(){
+				if (this.ended) {
+					s["library audio play speech"]();
+				}
+			});
+		//
 	}
 	//
 	s["library audio add and play speech"] = function(text) {
+		var audio 	= s["memory audio speech"];
+
 		if (!text) {
 			return;
 		}
@@ -209,20 +221,18 @@
 		}
 
 		s["memory text pieces for speech"].push(text);
-		s["library audio play speech"]();
+
+		if ((audio.paused || audio.ended) && !s["memory audio speech waiting timeout"]) {
+			s["library audio play speech"]();
+		}
 	}
 	//
-	s["library audio play speech"] = function(textOrElement, lang) {
+	s["library audio play speech"] = function(text, lang) {
 		var audio 	= s["memory audio speech"];
 		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user speech sound volume"];
-		var text 	= textOrElement;
 
-		if (textOrElement && ("string" !== typeof textOrElement)) {
-			text = $.trim(s["library text self"](textOrElement));
-		}
-		
-		if (!(audio.paused || audio.ended) || (0 > s["memory audio speech listened"])) {
+		if (!volume || !audio || (0 > s["memory audio speech listened"])) {
 			return;
 		}
 
@@ -240,40 +250,51 @@
 			return;
 		}
 
-		var text 	= (text ? [text] : s["memory text pieces for speech"]).shift();
+		if ("object" === typeof text) {
+			text = s["library text self"](text);
+		}
+		
+		text = (text ? [text] : s["memory text pieces for speech"]).shift();
+		text = $.trim(text).replace(/\s+/g, " ");
 
-		if (!volume || !audio || !text) {
+		s["library audio stop speech"]();
+
+		if (!text) {
 			return;
 		}
 
-		text = $.trim(text.replace(/\s+/g, " "));
+		s["memory audio speech waiting timeout"] = setTimeout(function(){
+			if (!s["memory focused page"]) {
+				text = document.location.host + ": " + text;
+			}
 
-		var lang = (lang || s["option user language"]);
-		var textPieces = s["library text pieces"]({
-			"text":text
-			,"range":90
-		});
+			var lang = (lang || s["option user language"]);
+			var textPieces = s["library text pieces"]({
+				"text":text
+				,"range":90
+			});
 
-		s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
-		s["memory audio speech listened"]++;
-		text = encodeURIComponent(s["memory text pieces for speech"].shift());
-		audio.volume = volume / 100;
-		audio.pause();
-		// .mp3 and google... and i can't play google speech in firefox :()
-		if ((".mp3" === ext) && (-1 === $.inArray(s["memory browser name"], ["mozilla"]))) {
-			audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + lang;
-		}
-		// .ogg
-		else{
-			var local = {
-				"ru": "&LOCALE=ru&VOICE=voxforge-ru-nsh",
-				"en": "&LOCALE=en_US&VOICE=cmu-slt-hsmm"
-			};
+			s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
+			text = encodeURIComponent(s["memory text pieces for speech"].shift());
+			audio.volume = volume / 100;
+			audio.pause();
+			// .mp3 and google... and i can't play google speech in firefox :()
+			if ((".mp3" === ext) && (-1 === $.inArray(s["memory browser name"], ["mozilla"]))) {
+				audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + lang;
+			}
+			// .ogg
+			else {
+				var local = {
+					"ru": "&LOCALE=ru&VOICE=voxforge-ru-nsh",
+					"en": "&LOCALE=en_US&VOICE=cmu-slt-hsmm"
+				};
 
-			audio.src = "http://mary.dfki.de:59125/process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=" + text + local[lang] + "&AUDIO=WAVE_FILE";
-		}
-		//
-		audio.play();
+				audio.src = "http://mary.dfki.de:59125/process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=" + text + local[lang] + "&AUDIO=WAVE_FILE";
+			}
+			//
+			audio.play();
+			s["memory audio speech listened"]++;
+		}, 500);
 	}
 	// developing
 	s["library audio generate curl for download speech"] = function() {
@@ -331,6 +352,7 @@
 	//
 	s["library speech recognition"] = function() {
 		// http://stiltsoft.com/blog/2013/05/google-chrome-how-to-use-the-web-speech-api/
+		// http://updates.html5rocks.com/2013/01/Voice-Driven-Web-Apps-Introduction-to-the-Web-Speech-API
 
 		var interimResult;
 		var recognition = s["memory recognition"];
@@ -340,8 +362,8 @@
 		}
 
 		s["green"]("speech recognition");
-		s["memory recognition"].stop();
 
+		recognition.stop();
 		recognition.lang = s["option user language"];
 		recognition.continuous = true;
 		recognition.interimResults = true;
@@ -352,7 +374,14 @@
 		};
 
 		recognition.onend = function() {
-			s["yellow"]("end speech", interimResult);
+			s["yellow"]("stop speech recognition", interimResult);
+		};
+
+		recognition.onstart = function() {
+			s["green"]("start speech recognition");
+			// can't focus on window ((
+			// s["memory last input element"].focus();
+			// 
 		};
 
 		recognition.onresult = function(event) {
@@ -388,7 +417,15 @@
 	};
 	// search element by xpath or cssPath selector
 	s["library find"] = function(path_or_element, context) {
-		context = ("string" === typeof context) ? s["library find"](context) : $(document);
+		if ("string" === typeof context) {
+			context = s["library find"](context);
+		}
+		else if ("object" !== typeof context) {
+			context = $(document);
+		}
+		else {
+			context = $(context);
+		}
 
 		var result = $();
 
@@ -398,6 +435,12 @@
 				return $(path_or_element, context);
 			}
 			catch (e) {}
+
+			path_or_element = $.trim(path_or_element);
+
+			if ("." !== path_or_element[0]) {
+				path_or_element = "." + path_or_element;
+			}
 
 			// if can't css try xpath
 			for (var i = 0; i < context.length; i++) {
@@ -588,7 +631,7 @@
 
 		$("*[tabindex]").each(function() {
 			if (undefined !== $(this).data("slovastick element self text")) {
-				$(this).removeAttr("tabindex").removeData("slovastick element self text");
+				$(this).removeAttr("tabindex");
 
 				return;
 			}
@@ -622,7 +665,7 @@
 		s["memory current elements"] = $();
 		s["memory current elements array"] = [];
 
-		var paths = xpath.split(/\s*\r?\n\|\s*|\s*\|\r?\n\s*/g);
+		var paths = xpath.split(/\n+/g); ///\s*\r?\n\|\s*|\s*\|\r?\n\s*/g
 
 		$.each(paths, function(i, value) {
 			var element = s["library find"](value).each(function() {
@@ -648,22 +691,14 @@
 			param = s["library find"](element)["xpath"];
 		}
 
-		var xpath = s["console"]() ? s["console"]() + "\n| " + param : param;
-
-		s["library headlight element"]({
-			"element"	: element
-			,"color"	: "rgba(255, 255, 0, 0.5)" //yellow
-		});
-
+		var xpath = s["console"]() ? s["console"]() + "\n\n" + param : param;
 		s["console"](xpath);
 
 		return element;
 	}
 	//
 	s["off"] = function (ele) {
-		$(window).add($("*", "body"))
-			.off(".slovastick .slovastick-memory-element .slovastick-shift");
-		
+		$(window).add($("*", "body")).off(".slovastick .slovastick-shift");
 		$("#slovastick_panel").hide();
 		s["option program status"] = "off";
 	};
@@ -672,8 +707,7 @@
 		s["off"]();
 
 		if (s["option program debug mode"]) {
-			var panel = $("#slovastick_panel")
-				$("#slovastick_panel").show();
+			var panel = $("#slovastick_panel").show();
 
 			$("[name='program']", panel)
 				.html("&nbsp;<b>SLOVASTICK</b>&nbsp;" + s["option program version"] + "&nbsp;");
@@ -696,7 +730,10 @@
 				});
 
 			s["option console"] = $("[name='console']", panel)
-				.css("width", panel.width())
+				.css({
+					"width"		: panel.width()
+					,"height"	: "80px"
+				})
 				.val(s["console"]());
 
 			$(window)
@@ -720,11 +757,8 @@
 		}
 		// 
 		$("*", "body") //.not($("*", "#slovastick"))
-			.on("focus.slovastick-memory-element", function(event) {
+			.on("focus.slovastick", function(event) {
 				var element = s["memory last element"] = $(this);
-
-				s["library audio stop speech"]();
-				s["library speech stop recognition"]();
 
 				element.mouseover();
 
@@ -742,10 +776,12 @@
 					,"color"	: "rgba(0, 255, 0, 0.5)" //green
 				});
 
-				s["green"]();
-				s["library audio play speech"](element);
+				var text = $.trim(s["library text self"](element));
+
+				s["green"](text);
+				s["library audio play speech"](text);
 			})
-			.on("mouseover.slovastick-memory-element", function(event) {
+			.on("mouseover.slovastick", function(event) {
 				event.stopPropagation();
 
 				s["memory last element"] = $(this);
@@ -756,10 +792,10 @@
 			});
 
 		$(window)
-			.on("focus", function() {
+			.on("focus.slovastick", function() {
 				s["memory focused page"] = true;
 			})
-			.on("blur", function() {
+			.on("blur.slovastick", function() {
 				s["memory focused page"] = false;
 			})
 			.on("keydown.slovastick", function(event) {
@@ -816,8 +852,11 @@
 							return;
 						}
 
+						var text = $.trim(s["library text self"](element));
+						s["library audio play speech"](text);
 						// if console have xpath for element
 						if (!element.not(current).length) {
+							s["yellow"](text);
 							s["library headlight element"]({
 								"element"	: current
 								,"color"	: "rgba(255, 255, 0, 0.8)" // yellow
@@ -827,6 +866,7 @@
 						}
 						//
 						s["console add xpath"](element);
+						element.focus();
 					});
 			});
 
@@ -848,52 +888,50 @@
 
 	s["memory audio signal"] 				= undefined;
 	s["memory audio speech listened"] 		= 0;
+	s["memory audio speech waiting timeout"]= undefined;
 	s["memory audio speech"] 				= undefined;
 	s["memory browser audio extension"] 	= s["memory browser audio extension"]; // :)
 	s["memory browser name"] 				= (browser[1] || "");
 	s["memory browser version"] 			= (browser[2] || "0");
-	s["memory current elements"] 			= $();
 	s["memory current elements array"] 		= [];
+	s["memory current elements"] 			= $();
 	s["memory focused page"]				= true;
-	s["memory recognition"] 				= window.webkitSpeechRecognition ? new webkitSpeechRecognition() : undefined;
-	s["memory text pieces for speech"] 		= [];
 	s["memory last element"]				= $();
 	s["memory last input element"]			= $();
+	s["memory recognition"] 				= window.webkitSpeechRecognition ? new webkitSpeechRecognition() : undefined;
+	s["memory text pieces for speech"] 		= [];
 
 	// option
 
+	s["option console"]						= $("<textarea></textarea>");
 	s["option program debug mode"] 			= true; //false || true || "all"
 	s["option program debug src"] 			= "http://localhost/";
 	s["option program description"]			= "Slovastick - web-based DOM manipulator";
 	s["option program src"]					= ((($("script[src*='slovastick.js']").last().attr("src") || "").match(/^(.*)slovastick\.js/) || [])[1] || s["option program debug src"]);
-	s["option sound src"]					= s["option program src"] + "sound/";
 	s["option program status"]				= "off";
 	s["option program version"] 			= "0.2";
+	s["option sound src"]					= s["option program src"] + "sound/";
 	s["option user language"]				= "ru";
 	s["option user signal sound volume"]	= 75;
-	s["option user speech sound volume"]	= 0;
-	s["option console"]						= $("<textarea></textarea>");
+	s["option user speech sound volume"]	= 75;
 
 	// page
 
 	// s["page *"] 							= ".//*[contains(@class, 'message')][last()]/span[3]"
 	s["page music.yandex.ru"] 				= function() {
-		s["console add xpath"]("//*[@class='b-link js-player-title']");
-		s["console add xpath"]("//*[@class='b-link js-player-artist']");
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__play')]").attr("title", "play song");
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__prev')]").attr("title", "previous song");
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__next')]").attr("title", "next song");
 		// search
 		s["console add xpath"]("//*[@id='search-input']").attr("title", "search song");
-		// finded
-		s["console add xpath"]("//*[@class='b-trigger__text']");
-		// album
-		s["console add xpath"]("//*[@class='b-link b-link_class_albums-title-link js-multi-ellipsis']");
-		// play album
-		s["console add xpath"]("//*[@class='b-album-control__text']");
+		//song title
+		s["console add xpath"]("//*[@class='b-link js-player-title']");
+		//artist
+		s["console add xpath"]("//*[@class='b-link js-player-artist']");
 		// list of song
-		s["console add xpath"]("//*[contains(@class, 'b-track  js-track js-track-')]");
-		s["console add xpath"]("//*[contains(@class, 'b-track  js-track js-track-')]/div[1]");
+		s["console add xpath"]("//*[contains(@class, 'b-track  js-track js-track-')] | //*[contains(@class, 'b-track  js-track js-track-')]/div[1]");
+		// categories
+		s["console add xpath"]("//*[@class='b-trigger__text']");
 		// page
 		s["console add xpath"]("//*[@class='b-pager__page']");
 	}
