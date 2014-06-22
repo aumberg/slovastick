@@ -29,109 +29,12 @@
 	a.run=function(a){d.each(c,function(d,c){b[c]=h(e[c],g,a)})}}};var l={aqua:[0,255,255,1],azure:[240,255,255,1],beige:[245,245,220,1],black:[0,0,0,1],blue:[0,0,255,1],brown:[165,42,42,1],cyan:[0,255,255,1],darkblue:[0,0,139,1],darkcyan:[0,139,139,1],darkgrey:[169,169,169,1],darkgreen:[0,100,0,1],darkkhaki:[189,183,107,1],darkmagenta:[139,0,139,1],darkolivegreen:[85,107,47,1],darkorange:[255,140,0,1],darkorchid:[153,50,204,1],darkred:[139,0,0,1],darksalmon:[233,150,122,1],darkviolet:[148,0,211,1],fuchsia:[255,
 	0,255,1],gold:[255,215,0,1],green:[0,128,0,1],indigo:[75,0,130,1],khaki:[240,230,140,1],lightblue:[173,216,230,1],lightcyan:[224,255,255,1],lightgreen:[144,238,144,1],lightgrey:[211,211,211,1],lightpink:[255,182,193,1],lightyellow:[255,255,224,1],lime:[0,255,0,1],magenta:[255,0,255,1],maroon:[128,0,0,1],navy:[0,0,128,1],olive:[128,128,0,1],orange:[255,165,0,1],pink:[255,192,203,1],purple:[128,0,128,1],violet:[128,0,128,1],red:[255,0,0,1],silver:[192,192,192,1],white:[255,255,255,1],yellow:[255,255,
 	0,1],transparent:[255,255,255,0]}})($);	
-	// 
-	var ua 			= navigator.userAgent.toLowerCase();
-	var	browser 	= (/(chrome)[ \/]([\w.]+)/.exec(ua)  // code copied and modified from http://code.jquery.com/jquery-migrate-1.0.0.js 
-			|| /(webkit)[ \/]([\w.]+)/.exec(ua)
-			|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
-			|| /(msie) ([\w.]+)/.exec(ua)
-			|| ((ua.indexOf("compatible") < 0) && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua))
-			|| []);
-	var audio 		= window.document.createElement("audio");
-
-	if (audio && audio.canPlayType) {
-		if (audio.canPlayType("audio/mpeg")) {
-			s["memory browser audio extension"] = ".mp3";
-		}
-		else if (audio.canPlayType("audio/ogg")) {
-			s["memory browser audio extension"] = ".ogg";
-		}
-	}
-
-	// var current_src 	= window.document.location.origin + window.document.location.pathname;
-
+	//
 	if (!window.document.evaluate) {
-		$.getScript("http://wicked-good-xpath.googlecode.com/files/wgxpath.install.js")
-			.success(function() {
-				window.wgxpath.install();
-			})
+		$.getScript("http://wicked-good-xpath.googlecode.com/files/wgxpath.install.js").success(function() {
+			window.wgxpath.install();
+		});
 	}
-	// fix browser bug or jQuery - http://bugs.jquery.com/ticket/13465
-	if (-1 !== $.inArray(s["memory browser name"], ["mozilla", "msie"])) {
-		function recursiveFix(element) {
-			$(element).children().each(function() {
-				var att = (this.attributes || []);
-				
-				for (var i = 1; i <= att.length; i++) {
-					var name  = att[att.length - i].name,
-						value = att[att.length - i].value;
-
-					$(this).removeAttr(name);
-					$(this).attr(name, value);
-				}
-
-				recursiveFix(this);
-			})
-		};
-	
-		recursiveFix($("#slovastick"));
-	}
-
-	$(function() {
-		s["memory audio signal"] 			= window.document.createElement("audio");
-		s["memory audio speech"] 			= window.document.createElement("audio");
-
-		$('<div id="slovastick_panel" style="display:none;position:fixed;left:10px;bottom:10px;z-index:2147483646;padding:5px; background-color:#DDD;color:black;border:1px solid black;border-radius:10px;"><button name="kick" title="Slovastick" style="float:left;">⇄</button><div style="float:left;">|</div><div name="program" style="float:left;"></div><div style="float:left;">|</div><div style="float:left;"><select name="language"><option>English</option><option selected>Russian</option></select></div><div style="float:left;">|</div><div style="float:left;"><select name="sound"><option>Volume 100</option><option selected>Volume 75</option><option>Volume 50</option><option>Volume 25</option><option>Volume 0</option></select></div><br/><textarea name="console" style="resize:both;min-height:0px;"></textarea><iframe id="slovastick_iframe" width="0px" height="0px" style="display:none;"></iframe></div>')
-			.attr("title", s["option program description"] + " (version " + s["option program version"] + ")")
-			.prependTo("body");
-
-		// if not mozilla
-		if (-1 === $.inArray(s["memory browser name"], ["mozilla"])) {
-			$("#slovastick_iframe").contents().find("body")
-				.append(s["memory audio signal"])
-				.append(s["memory audio speech"]);
-		}
-		// if mozilla
-		else {
-			$("#slovastick_iframe")
-				.append(s["memory audio signal"])
-				.append(s["memory audio speech"]);
-		}
-		//
-		s["console"](s["console"]());
-		// register DOM change
-		(function x() {
-			setTimeout(x, 2000);
-
-			var oldCurrent = s["memory current elements"];
-			var elements = s["library find"](s["console"]());
-			var changed = ((elements.length !== oldCurrent.length) || oldCurrent.not(elements).length)
-			var textForSpeech = "";
-
-			elements.not("input, textarea").each(function() {
-				var element = $(this);
-				var text = s["library text self"](element);
-				var data = element.data("slovastick element self text");
-
-				if (text && (data !== text)) {
-					element.data("slovastick element self text", text);
-					textForSpeech += text + ". ";
-				}
-			});
-
-			textForSpeech = $.trim(textForSpeech);
-
-			if (textForSpeech) {
-				s["library audio add and play speech"](textForSpeech);
-			}
-
-			if (changed) {
-				s["console"](s["console"]());
-			}
-		}());
-		//
-		s["on"]();
-	})
 
 	// library
 
@@ -692,69 +595,85 @@
 		}
 
 		var xpath = s["console"]() ? s["console"]() + "\n\n" + param : param;
+
 		s["console"](xpath);
 
 		return element;
 	}
 	//
-	s["off"] = function (ele) {
+	s["off"] = function() {
+		$("#slovastick_panel").remove();
+		clearTimeout(s["memory DOM change timeout"]);
 		$(window).add($("*", "body")).off(".slovastick .slovastick-shift");
-		$("#slovastick_panel").hide();
 		s["option program status"] = "off";
 	};
-	//
-	s["on"] = function (ele) {
+	// on DOM loaded
+	$(s["on"] = function() {
 		s["off"]();
 
-		if (s["option program debug mode"]) {
-			var panel = $("#slovastick_panel").show();
-
-			$("[name='program']", panel)
-				.html("&nbsp;<b>SLOVASTICK</b>&nbsp;" + s["option program version"] + "&nbsp;");
-
-			$("[name='language']", panel)
-				.on("change.slovastick", function() {
-					var language = $(this).find(":selected").val().toLowerCase();
-
-					langCode = {
-						"english"	: "en"
-						,"russian"	: "ru"
-					}
-
-					s["option user language"] = langCode[language];
-				});
-
-			$("[name='sound']", panel)
-				.on("change.slovastick", function() {
-					s["option user speech sound volume"] = parseInt($(this).find(":selected").val().slice(6));
-				});
-
-			s["option console"] = $("[name='console']", panel)
-				.css({
-					"width"		: panel.width()
-					,"height"	: "80px"
-				})
-				.val(s["console"]());
-
-			$(window)
-				.on("resize.slovastick", function() {
-					s["option console"].css({
-						"max-width"		: ($(window).width()  - 40) + "px"
-						,"max-height"	: ($(window).height() - 90) + "px"
-					})
-				})
-				.resize();
-
-			$("[name='kick']", panel)
-				.on("click.slovastick", function() {
-					var boo 		= $(this).data("show");
-					var elements 	= $("*", panel).not(this);
-
-					$(this).data("show", !boo);
-					boo ? elements.show(500) : elements.hide(500);
-				})
-				.click();
+		$('<div id="slovastick_panel" style="position:fixed;left:10px;bottom:10px;z-index:2147483646;padding:5px; background-color:#DDD;color:black;border:1px solid black;border-radius:10px;"><button name="kick" title="Slovastick" style="float:left;">⇄</button><div style="float:left;">|</div><div name="program" style="float:left;"></div><div style="float:left;">|</div><div style="float:left;"><select name="language"><option>English</option><option selected>Russian</option></select></div><div style="float:left;">|</div><div style="float:left;"><select name="sound"><option>Volume 100</option><option selected>Volume 75</option><option>Volume 50</option><option>Volume 25</option><option>Volume 0</option></select></div><br/><textarea name="console" style="resize:both;min-height:0px;"></textarea><iframe id="slovastick_iframe" width="0px" height="0px" style="display:none;"></iframe></div>')
+			.attr("title", s["option program description"] + " (version " + s["option program version"] + ")")
+			.appendTo("body");
+		// if not mozilla
+		if (-1 === $.inArray(s["memory browser name"], ["mozilla"])) {
+			$("#slovastick_iframe").contents().find("body")
+				.append(s["memory audio signal"])
+				.append(s["memory audio speech"]);
 		}
+		// if mozilla
+		else {
+			$("#slovastick_iframe")
+				.append(s["memory audio signal"])
+				.append(s["memory audio speech"]);
+		}
+		//
+		var panel = $("#slovastick_panel");
+
+		$("[name='program']", panel)
+			.html("&nbsp;<b>SLOVASTICK</b>&nbsp;" + s["option program version"] + "&nbsp;");
+
+		$("[name='language']", panel)
+			.on("change.slovastick", function() {
+				var language = $(this).find(":selected").val().toLowerCase();
+
+				langCode = {
+					"english"	: "en"
+					,"russian"	: "ru"
+				}
+
+				s["option user language"] = langCode[language];
+			});
+
+		$("[name='sound']", panel)
+			.on("change.slovastick", function() {
+				s["option user speech sound volume"] = parseInt($(this).find(":selected").val().slice(6));
+			});
+
+		s["option console"] = $("[name='console']", panel)
+			.css({
+				"width"		: panel.width()
+				,"height"	: "80px"
+			})
+			.val(s["console"]());
+
+		$(window)
+			.on("resize.slovastick", function() {
+				s["option console"].css({
+					"max-width"		: ($(window).width()  - 40) + "px"
+					,"max-height"	: ($(window).height() - 90) + "px"
+				})
+			})
+			.resize();
+
+		$("[name='kick']", panel)
+			.on("click.slovastick", function(event, ext) {
+				var boo 		= $(this).data("show");
+				var elements 	= $("*", panel).not(this);
+
+				$(this).data("show", !boo);
+				boo ? elements.stop().show(500) : elements.stop().hide(500);
+			})
+			.click();
 		// 
 		$("*", "body") //.not($("*", "#slovastick"))
 			.on("focus.slovastick", function(event) {
@@ -782,12 +701,17 @@
 				s["library audio play speech"](text);
 			})
 			.on("mouseover.slovastick", function(event) {
-				event.stopPropagation();
+				var element = $(event.target);
+				s["memory last element"] = element;
 
-				s["memory last element"] = $(this);
-
-				if (!$(this).not("input, textarea").length) {
-					s["memory last input element"] = $(this);
+				if (element.filter("input, textarea").length) {
+					s["memory last input element"] = element;
+				}
+			})
+			.on("click.slovastick", function(event) {
+				if ($(event.target).not(s["memory current elements"]).length) {
+					s["library audio stop speech"]();
+					s["library speech stop recognition"]();
 				}
 			});
 
@@ -811,9 +735,8 @@
 				s["library audio stop speech"]();
 				s["library speech stop recognition"]();
 				// if ENTER pressed
-				if (13 === event.which) {
-					// !!!double click detected
-					s["memory last element"].click();
+				if (13 === event.which && $(event.target).not($("button, input, textarea, form")).length) {
+					$(event.target).click();
 
 					return;
 				}
@@ -869,32 +792,92 @@
 						element.focus();
 					});
 			});
+		// 
+		var ua 			= navigator.userAgent.toLowerCase();
+		var	browser 	= (/(chrome)[ \/]([\w.]+)/.exec(ua)  // code copied and modified from http://code.jquery.com/jquery-migrate-1.0.0.js 
+				|| /(webkit)[ \/]([\w.]+)/.exec(ua)
+				|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
+				|| /(msie) ([\w.]+)/.exec(ua)
+				|| ((ua.indexOf("compatible") < 0) && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua))
+				|| []);
+		var audio 		= window.document.createElement("audio");
 
+		if (audio && audio.canPlayType) {
+			if (audio.canPlayType("audio/mpeg")) {
+				s["memory browser audio extension"] = ".mp3";
+			}
+			else if (audio.canPlayType("audio/ogg")) {
+				s["memory browser audio extension"] = ".ogg";
+			}
+		}
+		//
 		var xpath = (s["page " + document.location.host] || s["page *"]);
+		var p = ($("script[src*='slovastick.js']").last().attr("src") || "").match(/^(.*)slovastick\.js/);
 
 		if ("function" === typeof xpath) {
 			xpath = xpath();
 		}
 
-		s["console"](xpath);
-		s["option program status"] = "on";
+		if (p) {
+			s["option program src"] = p[0];
+		}
 
 		if ("all" === s["option program debug mode"]) {
 			s["green"]("I there! Hello :>");
 		}
-	};
+
+		if (browser) {
+			s["memory browser name"] = browser[1];
+			s["memory browser version"]	= browser[2];
+		}
+
+		s["console"](xpath);
+		// register DOM change
+		(function x() {
+			s["memory DOM change timeout"] = setTimeout(x, 2000);
+
+			var oldCurrent = s["memory current elements"];
+			var elements = s["library find"](s["console"]().replace(/\n+/g, "|"));
+			var changed = ((elements.length !== oldCurrent.length) || oldCurrent.not(elements).length)
+			var textForSpeech = "";
+
+			elements.not("input, textarea").each(function() {
+				var element = $(this);
+				var text = s["library text self"](element);
+				var data = element.data("slovastick element self text");
+
+				if (text && (data !== text)) {
+					element.data("slovastick element self text", text);
+					textForSpeech += text + ". ";
+				}
+			});
+
+			textForSpeech = $.trim(textForSpeech);
+
+			if (textForSpeech) {
+				s["library audio add and play speech"](textForSpeech);
+			}
+
+			if (changed) {
+				s["console"](s["console"]());
+			}
+		}());
+		//
+		s["option program status"] = "on";
+	});
 
 	// memory
 
-	s["memory audio signal"] 				= undefined;
+	s["memory audio signal"] 				= window.document.createElement("audio");
 	s["memory audio speech listened"] 		= 0;
 	s["memory audio speech waiting timeout"]= undefined;
-	s["memory audio speech"] 				= undefined;
-	s["memory browser audio extension"] 	= s["memory browser audio extension"]; // :)
-	s["memory browser name"] 				= (browser[1] || "");
-	s["memory browser version"] 			= (browser[2] || "0");
+	s["memory audio speech"] 				= window.document.createElement("audio");
+	s["memory browser audio extension"] 	= undefined;
+	s["memory browser name"] 				= "";
+	s["memory browser version"] 			= "0";
 	s["memory current elements array"] 		= [];
 	s["memory current elements"] 			= $();
+	s["memory DOM change timeout"] 			= undefined;
 	s["memory focused page"]				= true;
 	s["memory last element"]				= $();
 	s["memory last input element"]			= $();
@@ -907,7 +890,7 @@
 	s["option program debug mode"] 			= true; //false || true || "all"
 	s["option program debug src"] 			= "http://localhost/";
 	s["option program description"]			= "Slovastick - web-based DOM manipulator";
-	s["option program src"]					= ((($("script[src*='slovastick.js']").last().attr("src") || "").match(/^(.*)slovastick\.js/) || [])[1] || s["option program debug src"]);
+	s["option program src"]					= s["option program debug src"];
 	s["option program status"]				= "off";
 	s["option program version"] 			= "0.2";
 	s["option sound src"]					= s["option program src"] + "sound/";
@@ -917,13 +900,13 @@
 
 	// page
 
-	// s["page *"] 							= ".//*[contains(@class, 'message')][last()]/span[3]"
 	s["page music.yandex.ru"] 				= function() {
+		// search
+		s["console add xpath"]("//*[@id='search-input']").attr("title", "search song");
+		//
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__play')]").attr("title", "play song");
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__prev')]").attr("title", "previous song");
 		s["console add xpath"]("//*[contains(@class, 'b-jambox__next')]").attr("title", "next song");
-		// search
-		s["console add xpath"]("//*[@id='search-input']").attr("title", "search song");
 		//song title
 		s["console add xpath"]("//*[@class='b-link js-player-title']");
 		//artist
@@ -935,4 +918,5 @@
 		// page
 		s["console add xpath"]("//*[@class='b-pager__page']");
 	}
+	//
 }());
