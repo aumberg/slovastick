@@ -112,28 +112,43 @@
 		//
 	}
 	//
-	s["library audio add and play speech"] = function(text) {
+	s["library audio add and play speech"] = function(arg) {
 		var audio 	= s["memory audio speech"];
 
-		if (!text) {
+		arg = $.extend({
+			"string": ""
+			,"element": undefined
+		}, arg);
+
+		if (arg["element"]) {
+			arg["string"] = s["library text self"](arg["element"]);
+		}
+
+		if (!arg["string"]) {
 			return;
 		}
 
 		if ("all" === s["option program debug mode"]) {
-			s["green"]("add ", text);
+			s["green"]("add ", arg["string"]);
 		}
 
-		s["memory text pieces for speech"].push(text);
+		s["memory text pieces for speech"].push(arg["string"]);
 
 		if ((audio.paused || audio.ended) && !s["memory audio speech waiting timeout"]) {
 			s["library audio play speech"]();
 		}
 	}
 	//
-	s["library audio play speech"] = function(text, lang) {
+	s["library audio play speech"] = function(arg) {
 		var audio 	= s["memory audio speech"];
 		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user speech sound volume"];
+
+		arg = $.extend({
+			"string": ""
+			,"element": undefined
+			,"range": 90
+		}, arg);
 
 		if (!volume || !audio || (0 > s["memory audio speech listened"])) {
 			return;
@@ -153,37 +168,52 @@
 			return;
 		}
 
-		if ("object" === typeof text) {
-			text = s["library text self"](text);
+		if (arg["element"]) {
+			arg["string"] = s["library text self"](arg["element"]);
+			s["memory text pieces for speech"] = [arg["string"]];
+		}
+
+		if (arg["string"]) {
+			s["memory text pieces for speech"] = s["library text pieces"]({
+				"text": arg["string"]
+				,"range": arg["range"]
+			});
 		}
 		
-		text = (text ? [text] : s["memory text pieces for speech"]).shift();
-		text = $.trim(text).replace(/\s+/g, " ");
-
+		arg["string"] = s["memory text pieces for speech"].slice(0, 2).join("");
+		arg["string"] = $.trim(arg["string"]).replace(/\s+/g, " ");
+		s.yellow("aaaaaaaa", s["memory text pieces for speech"]);
+		s["memory text pieces for speech"] = s["memory text pieces for speech"].slice(2);
 		s["library audio stop speech"]();
+		s.yellow("bbbbbbbb", s["memory text pieces for speech"].length);
+		s.yellow("ccccccc", arg["string"]);
 
-		if (!text) {
+		if (!arg["string"]) {
 			return;
 		}
 
 		s["memory audio speech waiting timeout"] = setTimeout(function(){
 			if (!s["memory focused page"]) {
-				text = document.location.host + ": " + text;
+				arg["string"] = document.location.host + ": " + arg["string"];
 			}
 
 			var lang = (lang || s["option user language"]);
 			var textPieces = s["library text pieces"]({
-				"text":text
-				,"range":90
+				"text": arg["string"]
+				,"range": arg["range"]
 			});
 
+			s.yellow("xx", textPieces[0]);
+			s.yellow("xxчччччччччччч", textPieces);
+			// return;
+
+			arg["string"] = encodeURIComponent(textPieces.shift());
 			s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
-			text = encodeURIComponent(s["memory text pieces for speech"].shift());
 			audio.volume = volume / 100;
 			audio.pause();
 			// .mp3 and google... and i can't play google speech in firefox :()
 			if ((".mp3" === ext) && (-1 === $.inArray(s["memory browser name"], ["mozilla"]))) {
-				audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + lang;
+				audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + arg["string"] + "&tl=" + lang;
 			}
 			// .ogg
 			else {
@@ -207,13 +237,13 @@
 		return;
 	}
 	//
-	s["library headlight element"] = function(param) {
-		param = $.extend(true, {
+	s["library headlight element"] = function(arg) {
+		arg = $.extend(true, {
 			"element": $()
 			,"color": "rgba(0, 255, 0, 0.5)"
-		}, param);
+		}, arg);
 
-		param["element"].each(function() {
+		arg["element"].each(function() {
 			var oldBgColor = $(this).data("slovastick old bg color");
 
 			if (!oldBgColor) {
@@ -223,7 +253,7 @@
 
 			$(this)
 				.stop(true, true)
-				.animate({"backgroundColor"	: param["color"]}, 400, "linear")
+				.animate({"backgroundColor"	: arg["color"]}, 400, "linear")
 				.animate({"backgroundColor"	: oldBgColor}, 400, "linear");
 
 			// var offset = $(this).offset();
@@ -236,7 +266,7 @@
 			// 		,"top"		: offset.top
 			// 		,"z-index"	: "2147483647"
 			// 		,"opacity"  : 0.8
-			// 		,"background-color": param["color"]
+			// 		,"background-color": arg["color"]
 			// 	})
 			// 	.prependTo($("body"))
 			// 	.delay().animate({"opacity": 0}, 1000, function() {
@@ -450,35 +480,35 @@
 
 		return result;
 	}
-	s["library text pieces"] = function(param) {
-		param = $.extend(true, {
+	s["library text pieces"] = function(arg) {
+		arg = $.extend(true, {
 			text: ""
 			,range: 1
-		}, param);
+		}, arg);
 
 		var result = [];
 
 		(function loop() {
-			if(!param.text.length)
+			if(!arg.text.length)
 				return;
 
-			var part = param.text.slice(0, param.range);
+			var part = arg.text.slice(0, arg.range);
 
-			if(param.range > part.length)
+			if(arg.range > part.length)
 				return result.push(part);
 
 			var search = /[\.\?\!][^\.\?\!]*$/.exec(part),
-				nextStartIndex = param.range;
+				nextStartIndex = arg.range;
 
 			if(search) {
-				nextStartIndex = param.range - (search[0].length - 1);
+				nextStartIndex = arg.range - (search[0].length - 1);
 			}
 			else if(-1 !== part.lastIndexOf(" ")) {
 				nextStartIndex = part.lastIndexOf(" ") + 1;
 			}
 
-			result.push(param.text.slice(0, nextStartIndex));
-			param.text = param.text.slice(nextStartIndex);
+			result.push(arg.text.slice(0, nextStartIndex));
+			arg.text = arg.text.slice(nextStartIndex);
 	
 			loop();
 		}());
@@ -585,16 +615,16 @@
 		return s["memory current elements"];
 	}
 	//
-	s["console add xpath"] = function(param) {
-		if ("string" === typeof param) {
-			var element = s["library find"](param);
+	s["console add xpath"] = function(arg) {
+		if ("string" === typeof arg) {
+			var element = s["library find"](arg);
 		}
 		else {
-			var element = $(param);
-			param = s["library find"](element)["xpath"];
+			var element = $(arg);
+			arg = s["library find"](element)["xpath"];
 		}
 
-		var xpath = s["console"]() ? s["console"]() + "\n\n" + param : param;
+		var xpath = s["console"]() ? s["console"]() + "\n\n" + arg : arg;
 
 		s["console"](xpath);
 
@@ -698,7 +728,7 @@
 				var text = $.trim(s["library text self"](element));
 
 				s["green"](text);
-				s["library audio play speech"](text);
+				s["library audio play speech"]({"string":text});
 			})
 			.on("mouseover.slovastick", function(event) {
 				var element = $(event.target);
@@ -770,13 +800,13 @@
 						}
 						//
 						if ("" + window.getSelection()) {
-							s["library audio play speech"]("" + window.getSelection());
+							s["library audio play speech"]({"string": "" + window.getSelection()});
 
 							return;
 						}
 
 						var text = $.trim(s["library text self"](element));
-						s["library audio play speech"](text);
+						s["library audio play speech"]({"string": text});
 						// if console have xpath for element
 						if (!element.not(current).length) {
 							s["yellow"](text);
@@ -855,7 +885,7 @@
 			textForSpeech = $.trim(textForSpeech);
 
 			if (textForSpeech) {
-				s["library audio add and play speech"](textForSpeech);
+				s["library audio add and play speech"]({"string":textForSpeech});
 			}
 
 			if (changed) {
