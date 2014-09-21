@@ -899,7 +899,7 @@
 	s["option program sound src"]			= s["option program src"] + "sound/";
 	s["option program description"]			= "Slovastick - web-based DOM manipulator";
 	s["option program status"]				= "off";
-	s["option program version"] 			= "0.2";
+	s["option program version"] 			= "0.2.1";
 	s["option user language"]				= "ru";
 	s["option user signal sound volume"]	= 75;
 	s["option user speech sound volume"]	= 75;
