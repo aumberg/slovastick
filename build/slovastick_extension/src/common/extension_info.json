@@ -6,8 +6,9 @@
     "homepage_url"      :"http://localhost/",
     "default_locale"    :"en",
     "options_page"      :"res/index.html",
+    "homepage_url"      :"https://github.com/aumberg/slovastick",
     "background_scripts":[
-        "main.js"
+        "background.js"
     ], 
     "content_scripts":[
         "content.js"

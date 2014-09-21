@@ -1,4 +1,3 @@
-// 
 // slovastick - web-based DOM manipulator
 // manifesto  - http://minifesto.org/
 // license    - http://unlicense.org/UNLICENSE
@@ -69,7 +68,7 @@
 		var audio 	= s["memory audio signal"];
 		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user signal sound volume"];
-		var source 	= s["option sound src"]
+		var source 	= s["option program sound src"];
 
 		if (!audio || !volume || !ext) {
 			return;
@@ -93,13 +92,13 @@
 		}
 		
 		clearTimeout(audio.timeoutForUpdateListened);
-		clearTimeout(s["memory audio speech waiting timeout"]);
+		clearTimeout(s["memory audio waiting timeout"]);
 		audio.pause();
 		audio.timeoutForUpdateListened = setTimeout(function(){
 			s["memory audio speech listened"] = 0;
 		}, 5000);
-		s["memory audio speech waiting timeout"] = undefined;
-		s["memory text pieces for speech"] = [];
+		s["memory audio waiting timeout"] = undefined;
+
 		// not 'ended' event, because google return bad mp3 file
 		// another audio events: ended, durationchange ,pause ,play ,timeupdate ,volumechange
 		$(audio)
@@ -134,7 +133,7 @@
 
 		s["memory text pieces for speech"].push(arg["string"]);
 
-		if ((audio.paused || audio.ended) && !s["memory audio speech waiting timeout"]) {
+		if ((audio.paused || audio.ended) && !s["memory audio waiting timeout"]) {
 			s["library audio play speech"]();
 		}
 	}
@@ -143,6 +142,8 @@
 		var audio 	= s["memory audio speech"];
 		var ext 	= s["memory browser audio extension"];
 		var volume 	= s["option user speech sound volume"];
+		var lang 	= s["option user language"];
+		var pieces	= s["memory text pieces for speech"];
 
 		arg = $.extend({
 			"string": ""
@@ -150,70 +151,46 @@
 			,"range": 90
 		}, arg);
 
-		if (!volume || !audio || (0 > s["memory audio speech listened"])) {
+		s["library audio stop speech"]();
+
+		if (arg["element"]) {
+			arg["string"] = s["library text self"](arg["element"]);
+		}
+
+		if (arg["string"]) {
+			pieces = s["memory text pieces for speech"] = [arg["string"]];
+		}
+
+		if (!pieces.length || !volume || !audio || (-1 === s["memory audio speech listened"])) {
 			return;
 		}
 
 		if (10 < s["memory audio speech listened"]) {
 			s["yellow"]("wait speech...");
+			s["memory audio speech listened"] = -1;
 
-			setTimeout(function() {	
+			return setTimeout(function() {	
 				s["green"]("resume speech!");
 				s["memory audio speech listened"] = 0;
 				s["library audio play speech"]();
 			}, 5000);
-
-			s["memory audio speech listened"] = -1;
-
-			return;
 		}
 
-		if (arg["element"]) {
-			arg["string"] = s["library text self"](arg["element"]);
-			s["memory text pieces for speech"] = [arg["string"]];
-		}
-
-		if (arg["string"]) {
-			s["memory text pieces for speech"] = s["library text pieces"]({
-				"text": arg["string"]
-				,"range": arg["range"]
-			});
-		}
-		
-		arg["string"] = s["memory text pieces for speech"].slice(0, 2).join("");
-		arg["string"] = $.trim(arg["string"]).replace(/\s+/g, " ");
-		s.yellow("aaaaaaaa", s["memory text pieces for speech"]);
-		s["memory text pieces for speech"] = s["memory text pieces for speech"].slice(2);
-		s["library audio stop speech"]();
-		s.yellow("bbbbbbbb", s["memory text pieces for speech"].length);
-		s.yellow("ccccccc", arg["string"]);
-
-		if (!arg["string"]) {
-			return;
-		}
-
-		s["memory audio speech waiting timeout"] = setTimeout(function(){
+		s["memory audio waiting timeout"] = setTimeout(function(){
 			if (!s["memory focused page"]) {
-				arg["string"] = document.location.host + ": " + arg["string"];
+				pieces.unshift(document.location.host + ": ");
 			}
 
-			var lang = (lang || s["option user language"]);
-			var textPieces = s["library text pieces"]({
-				"text": arg["string"]
+			s["memory text pieces for speech"] = s["library text pieces"]({
+				"text": $.trim(pieces.join("")).replace(/\s+/g, " ")
 				,"range": arg["range"]
 			});
 
-			s.yellow("xx", textPieces[0]);
-			s.yellow("xxчччччччччччч", textPieces);
-			// return;
+			var text = encodeURIComponent(s["memory text pieces for speech"].shift());
 
-			arg["string"] = encodeURIComponent(textPieces.shift());
-			s["memory text pieces for speech"] = textPieces.concat(s["memory text pieces for speech"]);
-			audio.volume = volume / 100;
-			audio.pause();
 			// .mp3 and google... and i can't play google speech in firefox :()
-			if ((".mp3" === ext) && (-1 === $.inArray(s["memory browser name"], ["mozilla"]))) {
-				audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + arg["string"] + "&tl=" + lang;
+			if (".mp3" === ext) {
+				audio.src = "http://translate.google.com/translate_tts?ie=UTF-8&q=" + text + "&tl=" + lang;
 			}
 			// .ogg
 			else {
@@ -225,7 +202,10 @@
 				audio.src = "http://mary.dfki.de:59125/process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=" + text + local[lang] + "&AUDIO=WAVE_FILE";
 			}
 			//
+			audio.volume = volume / 100;
+			audio.pause();
 			audio.play();
+
 			s["memory audio speech listened"]++;
 		}, 500);
 	}
@@ -842,14 +822,9 @@
 		}
 		//
 		var xpath = (s["page " + document.location.host] || s["page *"]);
-		var p = ($("script[src*='slovastick.js']").last().attr("src") || "").match(/^(.*)slovastick\.js/);
 
 		if ("function" === typeof xpath) {
 			xpath = xpath();
-		}
-
-		if (p) {
-			s["option program src"] = p[0];
 		}
 
 		if ("all" === s["option program debug mode"]) {
@@ -900,7 +875,7 @@
 
 	s["memory audio signal"] 				= window.document.createElement("audio");
 	s["memory audio speech listened"] 		= 0;
-	s["memory audio speech waiting timeout"]= undefined;
+	s["memory audio waiting timeout"]= undefined;
 	s["memory audio speech"] 				= window.document.createElement("audio");
 	s["memory browser audio extension"] 	= undefined;
 	s["memory browser name"] 				= "";
@@ -917,17 +892,17 @@
 	// option
 
 	s["option console"]						= $("<textarea></textarea>");
-	s["option program debug mode"] 			= true; //false || true || "all"
+	s["option program debug mode"] 			= false; //false || true || "all"
 	s["option program debug src"] 			= "http://localhost/";
+	s["option program debug script src"] 	= s["option program debug src"] + "slovastick.js";
+	s["option program src"] 				= s["option program debug mode"] ? slovastick["option program debug src"] : (window.kango ? kango.io.getResourceUrl("res/") : document.location.href);
+	s["option program sound src"]			= s["option program src"] + "sound/";
 	s["option program description"]			= "Slovastick - web-based DOM manipulator";
-	s["option program src"]					= s["option program debug src"];
 	s["option program status"]				= "off";
 	s["option program version"] 			= "0.2";
-	s["option sound src"]					= s["option program src"] + "sound/";
 	s["option user language"]				= "ru";
 	s["option user signal sound volume"]	= 75;
 	s["option user speech sound volume"]	= 75;
-
 	// page
 
 	s["page music.yandex.ru"] 				= function() {
