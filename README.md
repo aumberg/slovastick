@@ -4,4 +4,4 @@ slovastick
 *Slovastick - web-based DOM manipulator.*
 
 
-<!-- #### [Official web site http://словастик.рф](http://словастик.рф) -->
+#### [Try it, on github pages!](http://aumberg.github.io/slovastick/)
