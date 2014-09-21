@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Slovastick - web-based DOM manipulator</title>
+	<script type="text/javascript" src="slovastick.js"></script>
+	<script type="text/javascript">
+		slovastick["console add xpath"]("//*[@id='description']/h3/div");
+		slovastick["console add xpath"]("//*[@id='description']/h3/div/h2");
+		slovastick["console add xpath"]("//ul/li/p | //ul/li/ol/li | //ul/li/ol/li//a");
+		slovastick["console add xpath"]("//input | //textarea");
+	</script>
+</head>
+<body style="height:2000px; background-color:#DDD">
+	<div id="description">
+		<h3>
+			<div style="text-align:center;">
+				<br/>
+				<br/>
+
+				<a href="javascript:(function(){var script=document.createElement('script');script.src='https://raw.githubusercontent.com/aumberg/slovastick/master/slovastick.js#'+(new Date().getTime());document.body.appendChild(script);}())">
+					Slovastick
+				</a>
+				- web-based DOM manipulator
+
+				<br/>
+				<br/>
+				(move link to bookmarks bar)
+				<br/>
+				<br/>
+				Now, you need to press TAB key, for move to another element
+				<br/>
+				<br/>
+				<br/>
+				<br/>
+				<h2>
+					WARNING! Program in DEEP-DEEP DEVELOPING stage. Please note.
+				</h2>
+				<br/>
+				<br/>
+				<br/>
+				<br/>
+			</div>
+		</h3>
+	</div>
+	<ul>
+		<li>
+			<p>
+				Кeyboard shortcuts.
+			</p>
+			<ol>
+				<li>
+					You can mark element by press key SHIFT, for this you need to put your mouse over the element or focus on it by press TAB key.
+				</li>
+				<li>
+					You can select text and press SHIFT for listen speech.
+				</li>
+				<li>
+					Press TAB to navigate and listen text of element 
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				In plan for future versions
+			</p>
+			<ol>
+				<li>
+					Develop it...
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Collaboration
+			</p>
+			<ol>
+				<li>
+					Good ideas or questions, write to email - slovastick@mail.ru
+				</li>
+				<li>
+					For download source code or bugs reporting, write to  
+					<a href="https://github.com/aumberg/slovastick/issues">
+						github
+					</a>
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Another information
+			</p>
+			<ol>
+				<li>
+					Learn XPath
+					<ol>
+						<li>
+							<a href="http://www.w3.org/TR/xpath/">
+								http://www.w3.org/TR/xpath/
+							</a>
+						</li>
+						<li>
+							<a href="http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx">
+								http://msdn.microsoft.com/en-gb/library/ms256115(v=vs.90).aspx
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					Look for other stuff for web navigation, named "Vimperator".
+					<ol>
+						<li>
+							<a href="http://en.wikipedia.org/wiki/Vimperator">
+								http://en.wikipedia.org/wiki/Vimperator
+							</a>
+						</li>
+					</ol>
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				License
+			</p>
+			<ol>
+				<li>
+					If you find patty on table, are you ask license agreement to eat him?
+				</li>
+			</ol>
+		</li>
+		<li>
+			<p>
+				Put text in this field, move on it and listen speech
+			</p>
+			<ol>
+				<textarea>hello</textarea>
+			</ol>
+		</li>
+	</ul>
+</body>
+</html>

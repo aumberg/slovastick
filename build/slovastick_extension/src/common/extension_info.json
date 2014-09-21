@@ -1,0 +1,21 @@
+{
+    "name"              :"Slovastick",
+    "description"       :"Slovastick - web-based DOM manipulator",
+    "version"           :"0.2",
+    "creator"           :"Alexander Umberg, slovastick@mail.ru",
+    "homepage_url"      :"http://localhost/",
+    "default_locale"    :"en",
+    "options_page"      :"res/index.html",
+    "homepage_url"      :"https://github.com/aumberg/slovastick",
+    "background_scripts":[
+        "background.js"
+    ], 
+    "content_scripts":[
+        "content.js"
+    ],
+    "browser_button":{
+        "caption"       :"Slovastick",
+        "icon"          :"icons/button.png",
+        "tooltipText"   :"Slovastick"
+    }
+}
